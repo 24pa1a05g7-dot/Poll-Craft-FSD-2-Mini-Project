@@ -1,0 +1,235 @@
+<%- include('../layouts/header') %>
+<%- include('../layouts/navbar') %>
+
+<!-- Hero Section -->
+<header class="py-5 bg-white border-bottom position-relative overflow-hidden">
+  <div class="container py-4">
+    <div class="row align-items-center gy-4">
+      <div class="col-lg-7">
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-medium mb-3">
+          <i class="bi bi-lightning-charge-fill me-1"></i> Interactive Full-Stack Polling & Surveys
+        </span>
+        <h1 class="display-4 fw-bold text-dark tracking-tight mb-3">
+          Gather insights, drive decisions, and engage communities in real time.
+        </h1>
+        <p class="lead text-secondary mb-4">
+          Create responsive single-choice or multi-choice instant polls and multi-question structured surveys. Powered by PostgreSQL, Sequelize ORM, Chart.js, and strict data validation.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <a href="/polls" class="btn btn-primary btn-lg px-4 py-2 rounded-pill shadow-sm">
+            <i class="bi bi-bar-chart-line me-2"></i> Explore Public Polls
+          </a>
+          <a href="/surveys" class="btn btn-outline-secondary btn-lg px-4 py-2 rounded-pill">
+            <i class="bi bi-clipboard2-check me-2"></i> Browse Surveys
+          </a>
+          <% if (!isAuthenticated) { %>
+            <a href="/auth/register" class="btn btn-primary-light btn-lg px-4 py-2 rounded-pill">
+              Sign Up Free
+            </a>
+          <% } %>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="card p-4 border shadow-sm rounded-4 bg-light">
+          <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+            <i class="bi bi-activity text-primary"></i> Live Platform Metrics
+          </h5>
+          <div class="row g-3">
+            <div class="col-6">
+              <div class="bg-white p-3 rounded-3 border text-center">
+                <div class="stat-number text-primary"><%= stats.totalPolls %></div>
+                <div class="small text-muted fw-medium">Polls Created</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="bg-white p-3 rounded-3 border text-center">
+                <div class="stat-number text-success"><%= stats.totalSurveys %></div>
+                <div class="small text-muted fw-medium">Surveys Created</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="bg-white p-3 rounded-3 border text-center">
+                <div class="stat-number text-indigo" style="color: #6366f1;"><%= stats.totalVotes %></div>
+                <div class="small text-muted fw-medium">Votes Cast</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="bg-white p-3 rounded-3 border text-center">
+                <div class="stat-number text-warning"><%= stats.totalResponses %></div>
+                <div class="small text-muted fw-medium">Survey Submissions</div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-top text-center">
+            <small class="text-secondary">
+              <i class="bi bi-shield-check text-success me-1"></i> Duplicate-vote prevention & session integrity enabled
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Featured Section -->
+<main class="container my-5">
+  <!-- Featured Polls -->
+  <div class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="h3 fw-bold text-dark m-0">Featured Community Polls</h2>
+        <p class="text-muted small m-0">Cast your vote instantly and see real-time aggregated results.</p>
+      </div>
+      <a href="/polls" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+        View All Polls <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+    <div class="row g-4">
+      <% if (featuredPolls.length === 0) { %>
+        <div class="col-12">
+          <div class="card p-4 text-center text-muted">No public polls published yet. Be the first to create one!</div>
+        </div>
+      <% } else { %>
+        <% featuredPolls.forEach(poll => { %>
+          <div class="col-md-4">
+            <div class="card card-custom card-hover h-100 p-4 d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <span class="badge bg-light text-primary border small"><%= poll.category %></span>
+                  <span class="badge <%= poll.isOpen ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' %> small">
+                    <%= poll.isOpen ? 'Active' : 'Closed' %>
+                  </span>
+                </div>
+                <h5 class="fw-bold mb-2">
+                  <a href="/polls/<%= poll.slug %>" class="text-dark text-decoration-none hover-primary">
+                    <%= poll.title %>
+                  </a>
+                </h5>
+                <p class="text-secondary small mb-3 text-truncate-2">
+                  <%= poll.description || 'No additional description provided.' %>
+                </p>
+              </div>
+              <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                <span class="small text-muted">
+                  <i class="bi bi-people me-1"></i> <%= poll.votes ? poll.votes.length : 0 %> votes
+                </span>
+                <div class="btn-group">
+                  <a href="/polls/<%= poll.slug %>" class="btn btn-sm btn-primary px-3 rounded-pill">
+                    Vote
+                  </a>
+                  <a href="/polls/<%= poll.slug %>/results" class="btn btn-sm btn-outline-secondary rounded-pill ms-1" title="View Results">
+                    <i class="bi bi-graph-up"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Featured Surveys -->
+  <div class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="h3 fw-bold text-dark m-0">Featured Surveys</h2>
+        <p class="text-muted small m-0">In-depth multi-question feedback and campus inquiries.</p>
+      </div>
+      <a href="/surveys" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+        View All Surveys <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+    <div class="row g-4">
+      <% if (featuredSurveys.length === 0) { %>
+        <div class="col-12">
+          <div class="card p-4 text-center text-muted">No public surveys published yet.</div>
+        </div>
+      <% } else { %>
+        <% featuredSurveys.forEach(survey => { %>
+          <div class="col-md-4">
+            <div class="card card-custom card-hover h-100 p-4 d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <span class="badge bg-light text-success border small"><%= survey.category %></span>
+                  <span class="badge <%= survey.isOpen ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' %> small">
+                    <%= survey.isOpen ? 'Accepting Responses' : 'Closed' %>
+                  </span>
+                </div>
+                <h5 class="fw-bold mb-2">
+                  <a href="/surveys/<%= survey.slug %>" class="text-dark text-decoration-none">
+                    <%= survey.title %>
+                  </a>
+                </h5>
+                <p class="text-secondary small mb-3 text-truncate-2">
+                  <%= survey.description || 'Comprehensive survey questions and feedback.' %>
+                </p>
+              </div>
+              <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                <span class="small text-muted">
+                  <i class="bi bi-file-earmark-text me-1"></i> <%= survey.responses ? survey.responses.length : 0 %> responses
+                </span>
+                <div class="btn-group">
+                  <a href="/surveys/<%= survey.slug %>" class="btn btn-sm btn-success px-3 rounded-pill text-white">
+                    Participate
+                  </a>
+                  <a href="/surveys/<%= survey.slug %>/results" class="btn btn-sm btn-outline-secondary rounded-pill ms-1" title="View Results">
+                    <i class="bi bi-graph-up"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Features Grid -->
+  <div class="py-4">
+    <div class="text-center mb-5">
+      <h2 class="h3 fw-bold text-dark">Engineered for Academic & Enterprise Data Collection</h2>
+      <p class="text-secondary">Robust security, complete relational schema, and responsive UI components.</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="p-4 bg-white rounded-3 border h-100">
+          <div class="stat-icon bg-primary-subtle text-primary mb-3">
+            <i class="bi bi-pie-chart"></i>
+          </div>
+          <h5 class="fw-bold">Dynamic Visual Analytics</h5>
+          <p class="text-secondary small mb-0">
+            Real-time interactive Chart.js bar, doughnut, and rating distributions calculated directly from PostgreSQL relational aggregations.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4 bg-white rounded-3 border h-100">
+          <div class="stat-icon bg-success-subtle text-success mb-3">
+            <i class="bi bi-shield-lock"></i>
+          </div>
+          <h5 class="fw-bold">Data Integrity & Security</h5>
+          <p class="text-secondary small mb-0">
+            Session fixation protection, CSRF tokens, SHA-256 respondent auditing, rate limiting, and structure locks preventing mutation of active surveys.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4 bg-white rounded-3 border h-100">
+          <div class="stat-icon bg-warning-subtle text-warning mb-3">
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+          </div>
+          <h5 class="fw-bold">RFC 4180 CSV Export</h5>
+          <p class="text-secondary small mb-0">
+            Export survey submissions in standard CSV format with correct quoting and cell escaping for offline statistical analysis in Excel or Python.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../layouts/footer') %>

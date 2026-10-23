@@ -1,0 +1,217 @@
+<%- include('../../layouts/header') %>
+<%- include('../../layouts/navbar') %>
+
+<main class="container my-5">
+  <!-- Top Bar -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <a href="/dashboard" class="text-secondary text-decoration-none small">
+          <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+        <span class="text-muted">/</span>
+        <span class="badge bg-light text-dark border"><%= survey.category %></span>
+      </div>
+      <h1 class="h3 fw-bold text-dark m-0"><%= survey.title %></h1>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2">
+      <a href="/surveys/<%= survey.slug %>" class="btn btn-outline-primary btn-sm rounded-pill" target="_blank">
+        <i class="bi bi-box-arrow-up-right me-1"></i> Public Survey Form
+      </a>
+      <a href="/surveys/<%= survey.slug %>/results" class="btn btn-outline-secondary btn-sm rounded-pill">
+        <i class="bi bi-pie-chart me-1"></i> Analytics
+      </a>
+      <a href="/surveys/<%= survey.id %>/export/csv" class="btn btn-outline-secondary btn-sm rounded-pill">
+        <i class="bi bi-download me-1"></i> CSV Export
+      </a>
+    </div>
+  </div>
+
+  <!-- Status & Publishing Control Card -->
+  <div class="card p-4 border-0 shadow-sm rounded-4 mb-4 bg-white">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="fw-semibold">Survey Status:</span>
+          <% if (survey.status === 'published') { %>
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill">
+              <i class="bi bi-check-circle me-1"></i> Published (Accepting Submissions)
+            </span>
+          <% } else if (survey.status === 'closed') { %>
+            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-1 rounded-pill">
+              <i class="bi bi-lock me-1"></i> Closed (Concluded)
+            </span>
+          <% } else { %>
+            <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-1 rounded-pill">
+              <i class="bi bi-pencil me-1"></i> Draft Mode (Unpublished)
+            </span>
+          <% } %>
+        </div>
+        <p class="text-secondary small mt-1 mb-0">
+          <%= responseCount %> response(s) recorded to date.
+        </p>
+      </div>
+
+      <form action="/surveys/<%= survey.id %>/status" method="POST" class="d-flex gap-2 m-0">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <% if (survey.status === 'draft') { %>
+          <input type="hidden" name="status" value="published">
+          <button type="submit" class="btn btn-success text-white px-4 rounded-pill">
+            <i class="bi bi-send me-1"></i> Publish Survey Now
+          </button>
+        <% } else if (survey.status === 'published') { %>
+          <input type="hidden" name="status" value="closed">
+          <button type="submit" class="btn btn-warning text-dark px-4 rounded-pill">
+            <i class="bi bi-pause-circle me-1"></i> Close Survey
+          </button>
+        <% } else { %>
+          <input type="hidden" name="status" value="published">
+          <button type="submit" class="btn btn-primary px-4 rounded-pill">
+            <i class="bi bi-play-circle me-1"></i> Re-open Survey
+          </button>
+        <% } %>
+      </form>
+    </div>
+  </div>
+
+  <% if (isLocked) { %>
+    <div class="alert alert-warning d-flex align-items-center border-0 shadow-sm rounded-3 mb-4" role="alert">
+      <i class="bi bi-shield-lock-fill fs-4 me-3 text-warning"></i>
+      <div>
+        <div class="fw-semibold">Survey Structure Locked</div>
+        <div class="small">
+          This survey has <%= responseCount %> recorded responses. Question addition and deletion have been disabled to guarantee dataset consistency and prevent response corruption.
+        </div>
+      </div>
+    </div>
+  <% } %>
+
+  <div class="row g-4">
+    <!-- Existing Questions Column -->
+    <div class="col-lg-7">
+      <div class="card card-custom p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h5 fw-bold text-dark m-0 d-flex align-items-center gap-2">
+            <i class="bi bi-list-check text-primary"></i> Survey Questions (<%= survey.questions ? survey.questions.length : 0 %>)
+          </h2>
+        </div>
+
+        <% if (!survey.questions || survey.questions.length === 0) { %>
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-question-circle display-6 mb-2"></i>
+            <p class="mb-0">No questions added yet. Use the question builder form to add your first question.</p>
+          </div>
+        <% } else { %>
+          <div class="d-flex flex-column gap-3">
+            <% survey.questions.forEach((q, idx) => { %>
+              <div class="card p-3 border rounded-3 bg-light position-relative">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <span class="badge bg-white text-secondary border small me-1">Q<%= idx + 1 %></span>
+                    <span class="badge bg-primary-subtle text-primary border small text-capitalize"><%= q.questionType.replace('_', ' ') %></span>
+                    <% if (q.isRequired) { %>
+                      <span class="badge bg-danger-subtle text-danger border small">Required</span>
+                    <% } else { %>
+                      <span class="badge bg-secondary-subtle text-secondary small">Optional</span>
+                    <% } %>
+                  </div>
+                  <% if (!isLocked) { %>
+                    <form action="/surveys/<%= survey.id %>/builder/questions/<%= q.id %>/delete" method="POST" onsubmit="return confirm('Delete this question?');">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Delete Question">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  <% } %>
+                </div>
+
+                <div class="fw-semibold text-dark fs-6 mb-1"><%= q.questionText %></div>
+                <% if (q.helpText) { %>
+                  <div class="small text-muted mb-2"><%= q.helpText %></div>
+                <% } %>
+
+                <!-- Options Preview -->
+                <% if (['single_choice', 'multiple_choice'].includes(q.questionType) && q.options) { %>
+                  <div class="mt-2 bg-white p-2 rounded border small">
+                    <div class="text-muted fw-medium mb-1">Answer Choices:</div>
+                    <ul class="mb-0 ps-3">
+                      <% q.options.forEach(opt => { %>
+                        <li><%= opt.optionText %></li>
+                      <% }) %>
+                    </ul>
+                  </div>
+                <% } %>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Add Question Form Column -->
+    <div class="col-lg-5">
+      <div class="card card-custom p-4 sticky-top" style="top: 80px;">
+        <h2 class="h5 fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+          <i class="bi bi-plus-circle-fill text-success"></i> Add Question
+        </h2>
+        <p class="text-secondary small mb-3">Add questions to your questionnaire.</p>
+
+        <% if (isLocked) { %>
+          <div class="text-center py-4 text-muted small bg-light rounded-3 p-3">
+            Question addition is disabled while active responses exist.
+          </div>
+        <% } else { %>
+          <form action="/surveys/<%= survey.id %>/builder/questions" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+            <div class="mb-3">
+              <label for="questionText" class="form-label small fw-semibold text-secondary">Question Text *</label>
+              <textarea class="form-control form-control-sm" id="questionText" name="questionText" rows="2" placeholder="e.g. How satisfied are you with our facilities?" required></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="helpText" class="form-label small fw-semibold text-secondary">Help / Subtext (Optional)</label>
+              <input type="text" class="form-control form-control-sm" id="helpText" name="helpText" placeholder="e.g. Rate on a scale of 1 to 5">
+            </div>
+
+            <div class="mb-3">
+              <label for="questionTypeSelect" class="form-label small fw-semibold text-secondary">Question Type *</label>
+              <select class="form-select form-select-sm" id="questionTypeSelect" name="questionType" required>
+                <option value="single_choice">Single Choice (Radio Buttons)</option>
+                <option value="multiple_choice">Multiple Choice (Checkboxes)</option>
+                <option value="short_text">Short Text (One line input)</option>
+                <option value="long_text">Long Text (Multi-line paragraph)</option>
+                <option value="rating">Rating (1 to 5 Stars / Scale)</option>
+                <option value="yes_no">Yes / No (Boolean Choice)</option>
+              </select>
+            </div>
+
+            <div class="mb-3" id="optionsInputGroup">
+              <label for="options" class="form-label small fw-semibold text-secondary">Options (One per line) *</label>
+              <textarea class="form-control form-control-sm" id="options" name="options" rows="4" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
+              <div class="form-text small">Enter at least two distinct answer options.</div>
+            </div>
+
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox" role="switch" id="isRequired" name="isRequired" checked>
+              <label class="form-check-label small" for="isRequired">
+                <strong>Required question</strong>
+              </label>
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary btn-sm py-2 rounded-pill fw-medium">
+                <i class="bi bi-plus-lg me-1"></i> Add Question to Survey
+              </button>
+            </div>
+          </form>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="/js/builder.js"></script>
+
+<%- include('../../layouts/footer') %>

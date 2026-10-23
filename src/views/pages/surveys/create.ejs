@@ -1,0 +1,94 @@
+<%- include('../../layouts/header') %>
+<%- include('../../layouts/navbar') %>
+
+<main class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4 bg-white">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <a href="/dashboard" class="btn btn-sm btn-outline-secondary rounded-pill">
+            <i class="bi bi-arrow-left"></i> Dashboard
+          </a>
+          <span class="badge bg-success-subtle text-success border small">Survey Wizard: Step 1</span>
+        </div>
+
+        <h1 class="h3 fw-bold text-dark mb-1">Create a Multi-Question Survey</h1>
+        <p class="text-secondary small mb-4">Set up survey metadata. You will add questions and configure response choices next in the Builder.</p>
+
+        <% if (errors && errors.length > 0) { %>
+          <div class="alert alert-danger py-2 small border-0 mb-4" role="alert">
+            <ul class="mb-0 ps-3">
+              <% errors.forEach(err => { %>
+                <li><%= err %></li>
+              <% }) %>
+            </ul>
+          </div>
+        <% } %>
+
+        <form action="/surveys/new" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+          <div class="mb-3">
+            <label for="title" class="form-label small fw-semibold text-secondary">Survey Title *</label>
+            <input type="text" class="form-control" id="title" name="title" value="<%= formData ? formData.title || '' : '' %>" placeholder="e.g. Student Academic & Campus Experience Survey" required minlength="3" maxlength="255">
+          </div>
+
+          <div class="mb-3">
+            <label for="description" class="form-label small fw-semibold text-secondary">Survey Overview & Instructions</label>
+            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Explain the purpose, estimated time to complete, and how the data will be used..."><%= formData ? formData.description || '' : '' %></textarea>
+          </div>
+
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <label for="category" class="form-label small fw-semibold text-secondary">Category</label>
+              <select class="form-select" id="category" name="category">
+                <option value="General">General</option>
+                <option value="Academics">Academics</option>
+                <option value="Technology">Technology</option>
+                <option value="Campus Life">Campus Life</option>
+                <option value="Research">Research</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="expiresAt" class="form-label small fw-semibold text-secondary">Closing Expiration Date (Optional)</label>
+              <input type="datetime-local" class="form-control" id="expiresAt" name="expiresAt">
+            </div>
+          </div>
+
+          <div class="p-3 bg-light rounded-3 border mb-4">
+            <h6 class="fw-semibold text-dark mb-3">Audience & Security Settings</h6>
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" role="switch" id="isPublic" name="isPublic" checked>
+              <label class="form-check-label small" for="isPublic">
+                <strong>Public Directory Listing</strong> (Make survey discoverable on public listings)
+              </label>
+            </div>
+
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" role="switch" id="allowAnonymous" name="allowAnonymous" checked>
+              <label class="form-check-label small" for="allowAnonymous">
+                <strong>Allow Anonymous Submissions</strong> (Permit responses without requiring account sign-in)
+              </label>
+            </div>
+
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" id="requireLogin" name="requireLogin">
+              <label class="form-check-label small" for="requireLogin">
+                <strong>Require Verified Login</strong> (Only registered accounts can respond)
+              </label>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <a href="/dashboard" class="btn btn-light border px-4">Cancel</a>
+            <button type="submit" class="btn btn-success text-white px-4 fw-medium">
+              Continue to Question Builder <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../../layouts/footer') %>

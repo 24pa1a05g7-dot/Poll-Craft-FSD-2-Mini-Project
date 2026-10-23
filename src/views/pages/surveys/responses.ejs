@@ -1,0 +1,88 @@
+<%- include('../../layouts/header') %>
+<%- include('../../layouts/navbar') %>
+
+<main class="container my-5">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <a href="/surveys/<%= survey.id %>/builder" class="text-secondary text-decoration-none small">
+          <i class="bi bi-arrow-left me-1"></i> Survey Builder
+        </a>
+        <span class="text-muted">/</span>
+        <a href="/surveys/<%= survey.slug %>/results" class="text-secondary text-decoration-none small">
+          Analytics
+        </a>
+      </div>
+      <h1 class="h3 fw-bold text-dark m-0">Individual Submissions</h1>
+      <p class="text-secondary small m-0"><%= survey.title %></p>
+    </div>
+
+    <div>
+      <a href="/surveys/<%= survey.id %>/export/csv" class="btn btn-outline-success btn-sm rounded-pill px-3">
+        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Download All as CSV
+      </a>
+    </div>
+  </div>
+
+  <div class="card card-custom p-4">
+    <% if (!responses || responses.length === 0) { %>
+      <div class="text-center py-5 text-muted">
+        <i class="bi bi-inbox display-6 mb-2"></i>
+        <p class="mb-0">No submissions recorded for this survey yet.</p>
+      </div>
+    <% } else { %>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small text-uppercase text-secondary">
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Submission Time</th>
+              <th scope="col">Respondent</th>
+              <th scope="col">Answers Summary</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% responses.forEach(resp => { %>
+              <tr>
+                <td class="fw-semibold">#<%= resp.id %></td>
+                <td class="small text-muted">
+                  <%= resp.submittedAt ? new Date(resp.submittedAt).toLocaleString() : 'N/A' %>
+                </td>
+                <td>
+                  <% if (resp.respondent) { %>
+                    <div class="fw-medium text-dark"><%= resp.respondent.name %></div>
+                    <div class="small text-muted"><%= resp.respondent.email %></div>
+                  <% } else { %>
+                    <span class="badge bg-light text-secondary border">Anonymous</span>
+                  <% } %>
+                </td>
+                <td class="small">
+                  <div class="d-flex flex-column gap-1">
+                    <% (resp.answers || []).forEach(ans => { %>
+                      <div>
+                        <strong><%= ans.question ? ans.question.questionText : 'Question' %>:</strong>
+                        <% if (ans.numericValue !== null) { %>
+                          <span class="text-warning fw-bold"><%= ans.numericValue %> / 5 ★</span>
+                        <% } else if (ans.booleanValue !== null) { %>
+                          <span class="badge <%= ans.booleanValue ? 'bg-success' : 'bg-danger' %>"><%= ans.booleanValue ? 'Yes' : 'No' %></span>
+                        <% } else if (ans.textValue) { %>
+                          <span class="text-dark">"<%= ans.textValue %>"</span>
+                        <% } else if (ans.selectedOptions && ans.selectedOptions.length > 0) { %>
+                          <span class="text-primary"><%= ans.selectedOptions.map(o => o.optionText).join(', ') %></span>
+                        <% } else { %>
+                          <span class="text-muted fst-italic">No answer</span>
+                        <% } %>
+                      </div>
+                    <% }) %>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</main>
+
+<%- include('../../layouts/footer') %>

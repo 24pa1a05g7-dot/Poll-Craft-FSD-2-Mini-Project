@@ -1,0 +1,107 @@
+<%- include('../../layouts/header') %>
+<%- include('../../layouts/navbar') %>
+
+<main class="container my-5">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h1 class="h3 fw-bold text-dark m-0">Explore Public Surveys</h1>
+      <p class="text-secondary small m-0">Share your detailed perspectives and review survey findings.</p>
+    </div>
+    <% if (isAuthenticated) { %>
+      <a href="/surveys/new" class="btn btn-success text-white rounded-pill px-3 py-2 btn-sm">
+        <i class="bi bi-plus-lg me-1"></i> Create Survey
+      </a>
+    <% } %>
+  </div>
+
+  <!-- Search & Category Filters -->
+  <div class="card p-3 border-0 shadow-sm rounded-4 mb-4 bg-white">
+    <form action="/surveys" method="GET" class="row g-2 align-items-center">
+      <div class="col-md-7">
+        <div class="input-group">
+          <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-search"></i></span>
+          <input type="text" name="search" value="<%= search %>" class="form-control border-start-0" placeholder="Search surveys by title...">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select name="category" class="form-select">
+          <option value="All" <%= category === 'All' ? 'selected' : '' %>>All Categories</option>
+          <option value="General" <%= category === 'General' ? 'selected' : '' %>>General</option>
+          <option value="Academics" <%= category === 'Academics' ? 'selected' : '' %>>Academics</option>
+          <option value="Technology" <%= category === 'Technology' ? 'selected' : '' %>>Technology</option>
+          <option value="Campus Life" <%= category === 'Campus Life' ? 'selected' : '' %>>Campus Life</option>
+          <option value="Research" <%= category === 'Research' ? 'selected' : '' %>>Research</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-grid">
+        <button type="submit" class="btn btn-secondary rounded-3">Filter</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Survey Cards Grid -->
+  <% if (surveys.length === 0) { %>
+    <div class="card p-5 text-center border-0 shadow-sm rounded-4">
+      <div class="display-6 text-muted mb-3"><i class="bi bi-clipboard2-x"></i></div>
+      <h3 class="h5 fw-bold text-dark">No surveys found</h3>
+      <p class="text-secondary small">No published surveys matching your criteria are currently active.</p>
+      <div>
+        <a href="/surveys" class="btn btn-outline-primary btn-sm rounded-pill px-3">Reset Filters</a>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="row g-4 mb-5">
+      <% surveys.forEach(survey => { %>
+        <div class="col-md-4">
+          <div class="card card-custom card-hover h-100 p-4 d-flex flex-column justify-content-between">
+            <div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge bg-light text-success border small"><%= survey.category %></span>
+                <span class="badge <%= survey.isOpen ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' %> small">
+                  <%= survey.isOpen ? 'Open' : 'Closed' %>
+                </span>
+              </div>
+              <h5 class="fw-bold mb-2">
+                <a href="/surveys/<%= survey.slug %>" class="text-dark text-decoration-none">
+                  <%= survey.title %>
+                </a>
+              </h5>
+              <p class="text-secondary small mb-3">
+                <%= survey.description ? (survey.description.length > 90 ? survey.description.slice(0, 90) + '...' : survey.description) : 'Multi-question academic questionnaire.' %>
+              </p>
+            </div>
+
+            <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+              <span class="small text-muted">
+                <i class="bi bi-chat-left-dots me-1"></i> <%= survey.responses ? survey.responses.length : 0 %> responses
+              </span>
+              <div class="btn-group">
+                <a href="/surveys/<%= survey.slug %>" class="btn btn-sm btn-success text-white px-3 rounded-pill">
+                  Participate
+                </a>
+                <a href="/surveys/<%= survey.slug %>/results" class="btn btn-sm btn-outline-secondary rounded-pill ms-1" title="View Results">
+                  <i class="bi bi-graph-up"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+    <!-- Pagination -->
+    <% if (totalPages > 1) { %>
+      <nav aria-label="Surveys page navigation">
+        <ul class="pagination justify-content-center">
+          <% for (let p = 1; p <= totalPages; p++) { %>
+            <li class="page-item <%= p === currentPage ? 'active' : '' %>">
+              <a class="page-link" href="/surveys?page=<%= p %>&category=<%= category %>&search=<%= search %>"><%= p %></a>
+            </li>
+          <% } %>
+        </ul>
+      </nav>
+    <% } %>
+  <% } %>
+</main>
+
+<%- include('../../layouts/footer') %>

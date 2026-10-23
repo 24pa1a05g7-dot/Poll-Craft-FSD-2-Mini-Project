@@ -1,0 +1,62 @@
+<%- include('../../layouts/header') %>
+<%- include('../../layouts/navbar') %>
+
+<main class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-5">
+      <div class="card p-4 p-md-5 shadow-sm border-0 rounded-4 bg-white">
+        <div class="text-center mb-4">
+          <div class="brand-badge d-inline-block fs-4 mb-2">📊 QP</div>
+          <h2 class="h4 fw-bold text-dark">Sign In to QuickPulse</h2>
+          <p class="text-secondary small">Access your polls, surveys, and response analytics.</p>
+        </div>
+
+        <% if (errors && errors.length > 0) { %>
+          <div class="alert alert-danger py-2 small border-0 mb-3" role="alert">
+            <ul class="mb-0 ps-3">
+              <% errors.forEach(err => { %>
+                <li><%= err %></li>
+              <% }) %>
+            </ul>
+          </div>
+        <% } %>
+
+        <form action="/auth/login" method="POST" novalidate>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+          <div class="mb-3">
+            <label for="email" class="form-label small fw-semibold text-secondary">Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
+              <input type="email" class="form-control" id="email" name="email" value="<%= formData ? formData.email || '' : '' %>" placeholder="name@domain.com" required autofocus>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="password" class="form-label small fw-semibold text-secondary">Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-lock"></i></span>
+              <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2 rounded-3 mb-3 fw-medium">
+            Sign In
+          </button>
+        </form>
+
+        <div class="card bg-light border p-3 rounded-3 small mb-3">
+          <div class="fw-semibold text-dark mb-1"><i class="bi bi-info-circle text-primary me-1"></i> Demo Evaluation Logins:</div>
+          <div class="text-muted"><strong>Admin:</strong> <code>admin@quickpulse.io</code> / <code>AdminPassword123!</code></div>
+          <div class="text-muted"><strong>User:</strong> <code>sarah@university.edu</code> / <code>Password123!</code></div>
+        </div>
+
+        <div class="text-center small text-secondary">
+          Don't have an account? <a href="/auth/register" class="fw-semibold text-primary text-decoration-none">Create an account</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../../layouts/footer') %>

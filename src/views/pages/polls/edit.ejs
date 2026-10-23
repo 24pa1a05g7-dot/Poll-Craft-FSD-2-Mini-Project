@@ -1,0 +1,75 @@
+<%- include('../../layouts/header') %>
+<%- include('../../layouts/navbar') %>
+
+<main class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4 bg-white">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <a href="/dashboard" class="btn btn-sm btn-outline-secondary rounded-pill">
+            <i class="bi bi-arrow-left"></i> Dashboard
+          </a>
+          <span class="badge bg-secondary-subtle text-secondary border small">Poll Settings</span>
+        </div>
+
+        <h1 class="h3 fw-bold text-dark mb-1">Edit Poll Settings</h1>
+        <p class="text-secondary small mb-4">Modify title, metadata, status, or closing expiration date.</p>
+
+        <form action="/polls/<%= poll.slug %>/edit" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+          <div class="mb-3">
+            <label for="title" class="form-label small fw-semibold text-secondary">Poll Title *</label>
+            <input type="text" class="form-control" id="title" name="title" value="<%= poll.title %>" required minlength="3">
+          </div>
+
+          <div class="mb-3">
+            <label for="description" class="form-label small fw-semibold text-secondary">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3"><%= poll.description || '' %></textarea>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="category" class="form-label small fw-semibold text-secondary">Category</label>
+              <select class="form-select" id="category" name="category">
+                <option value="General" <%= poll.category === 'General' ? 'selected' : '' %>>General</option>
+                <option value="Technology" <%= poll.category === 'Technology' ? 'selected' : '' %>>Technology</option>
+                <option value="Academics" <%= poll.category === 'Academics' ? 'selected' : '' %>>Academics</option>
+                <option value="Campus Life" <%= poll.category === 'Campus Life' ? 'selected' : '' %>>Campus Life</option>
+                <option value="Lifestyle" <%= poll.category === 'Lifestyle' ? 'selected' : '' %>>Lifestyle</option>
+                <option value="Sports" <%= poll.category === 'Sports' ? 'selected' : '' %>>Sports</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="status" class="form-label small fw-semibold text-secondary">Poll Status</label>
+              <select class="form-select" id="status" name="status">
+                <option value="published" <%= poll.status === 'published' ? 'selected' : '' %>>Published (Open)</option>
+                <option value="closed" <%= poll.status === 'closed' ? 'selected' : '' %>>Closed (Concluded)</option>
+                <option value="draft" <%= poll.status === 'draft' ? 'selected' : '' %>>Draft</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="expiresAt" class="form-label small fw-semibold text-secondary">Closing Date & Time</label>
+            <input type="datetime-local" class="form-control" id="expiresAt" name="expiresAt" value="<%= poll.expiresAt ? new Date(poll.expiresAt).toISOString().slice(0, 16) : '' %>">
+          </div>
+
+          <div class="form-check form-switch mb-4">
+            <input class="form-check-input" type="checkbox" role="switch" id="isPublic" name="isPublic" <%= poll.isPublic ? 'checked' : '' %>>
+            <label class="form-check-label small" for="isPublic">
+              List poll in public directory
+            </label>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <a href="/dashboard" class="btn btn-light border px-4">Cancel</a>
+            <button type="submit" class="btn btn-primary px-4 fw-medium">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../../layouts/footer') %>

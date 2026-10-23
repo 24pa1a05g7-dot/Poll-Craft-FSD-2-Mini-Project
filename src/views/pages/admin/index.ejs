@@ -1,0 +1,202 @@
+<%- include('../../layouts/header') %>
+<%- include('../../layouts/navbar') %>
+
+<main class="container my-5">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1 rounded-pill small">
+          <i class="bi bi-shield-lock-fill me-1"></i> Root Administrator
+        </span>
+      </div>
+      <h1 class="h3 fw-bold text-dark m-0">Platform Administration Console</h1>
+      <p class="text-secondary small m-0">System-wide monitoring, user governance, and content moderation.</p>
+    </div>
+  </div>
+
+  <!-- Platform Overview Stats -->
+  <div class="row g-3 mb-5">
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="stat-number text-dark"><%= stats.totalUsers %></div>
+            <div class="text-muted small fw-medium">Registered Users</div>
+          </div>
+          <div class="stat-icon bg-light text-dark">
+            <i class="bi bi-people"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="stat-number text-primary"><%= stats.totalPolls %></div>
+            <div class="text-muted small fw-medium">Total Polls</div>
+          </div>
+          <div class="stat-icon bg-primary-subtle text-primary">
+            <i class="bi bi-bar-chart-line"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="stat-number text-success"><%= stats.totalSurveys %></div>
+            <div class="text-muted small fw-medium">Total Surveys</div>
+          </div>
+          <div class="stat-icon bg-success-subtle text-success">
+            <i class="bi bi-clipboard2-check"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="stat-number text-warning"><%= stats.totalVotes + stats.totalResponses %></div>
+            <div class="text-muted small fw-medium">Total Submissions</div>
+          </div>
+          <div class="stat-icon bg-warning-subtle text-warning">
+            <i class="bi bi-activity"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Management Table -->
+  <div class="card card-custom p-4 mb-5">
+    <h2 class="h5 fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+      <i class="bi bi-person-lines-fill text-primary"></i> User Account Governance
+    </h2>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase text-secondary">
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Role</th>
+            <th scope="col">Account Status</th>
+            <th scope="col" class="text-end">Moderation Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% (stats.recentUsers || []).forEach(u => { %>
+            <tr>
+              <td class="fw-semibold">#<%= u.id %></td>
+              <td><%= u.name %></td>
+              <td class="small text-muted"><%= u.email %></td>
+              <td>
+                <span class="badge <%= u.role === 'admin' ? 'bg-danger-subtle text-danger' : 'bg-light text-secondary border' %>">
+                  <%= u.role %>
+                </span>
+              </td>
+              <td>
+                <span class="badge <%= u.isActive ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' %>">
+                  <%= u.isActive ? 'Active' : 'Suspended' %>
+                </span>
+              </td>
+              <td class="text-end">
+                <% if (u.id !== currentUser.id) { %>
+                  <form action="/admin/users/<%= u.id %>/toggle" method="POST" class="d-inline" onsubmit="return confirm('Toggle status for user <%= u.email %>?');">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="btn btn-sm <%= u.isActive ? 'btn-outline-danger' : 'btn-outline-success' %> rounded-pill">
+                      <%= u.isActive ? 'Deactivate' : 'Reactivate' %>
+                    </button>
+                  </form>
+                <% } else { %>
+                  <span class="small text-muted fst-italic">Current Session</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Poll Moderation -->
+    <div class="col-lg-6">
+      <div class="card card-custom p-4 h-100">
+        <h2 class="h5 fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+          <i class="bi bi-bar-chart text-primary"></i> Community Polls
+        </h2>
+
+        <div class="list-group list-group-flush">
+          <% (stats.recentPolls || []).forEach(poll => { %>
+            <div class="list-group-item px-0 py-3">
+              <div class="d-flex justify-content-between align-items-start mb-1">
+                <div class="fw-semibold">
+                  <a href="/polls/<%= poll.slug %>" class="text-dark text-decoration-none" target="_blank">
+                    <%= poll.title %>
+                  </a>
+                </div>
+                <span class="badge <%= poll.isOpen ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' %> small">
+                  <%= poll.status %>
+                </span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center text-muted small mt-2">
+                <span>By: <%= poll.creator ? poll.creator.name : 'Unknown' %> · <%= poll.votes ? poll.votes.length : 0 %> votes</span>
+                <form action="/admin/polls/<%= poll.id %>/delete" method="POST" onsubmit="return confirm('Administrative delete for this poll?');">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="btn btn-sm btn-outline-danger" title="Admin Delete">
+                    <i class="bi bi-trash"></i> Delete
+                  </button>
+                </form>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Survey Moderation -->
+    <div class="col-lg-6">
+      <div class="card card-custom p-4 h-100">
+        <h2 class="h5 fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+          <i class="bi bi-clipboard2 text-success"></i> Community Surveys
+        </h2>
+
+        <div class="list-group list-group-flush">
+          <% (stats.recentSurveys || []).forEach(survey => { %>
+            <div class="list-group-item px-0 py-3">
+              <div class="d-flex justify-content-between align-items-start mb-1">
+                <div class="fw-semibold">
+                  <a href="/surveys/<%= survey.slug %>" class="text-dark text-decoration-none" target="_blank">
+                    <%= survey.title %>
+                  </a>
+                </div>
+                <span class="badge <%= survey.status === 'published' ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' %> small">
+                  <%= survey.status %>
+                </span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center text-muted small mt-2">
+                <span>By: <%= survey.creator ? survey.creator.name : 'Unknown' %> · <%= survey.responses ? survey.responses.length : 0 %> responses</span>
+                <form action="/admin/surveys/<%= survey.id %>/delete" method="POST" onsubmit="return confirm('Administrative delete for this survey?');">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="btn btn-sm btn-outline-danger" title="Admin Delete">
+                    <i class="bi bi-trash"></i> Delete
+                  </button>
+                </form>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../../layouts/footer') %>
