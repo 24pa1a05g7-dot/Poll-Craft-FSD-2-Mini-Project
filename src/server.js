@@ -18,7 +18,7 @@ async function startServer() {
 
     server.listen(PORT, () => {
       console.log(`====================================================`);
-      console.log(`🚀 QuickPulse Polling & Survey Platform is running!`);
+      console.log(`🚀 PollCraft Polling & Survey Platform is running!`);
       console.log(`🌐 Local URL:     http://localhost:${PORT}`);
       console.log(`⚙️  Environment:   ${process.env.NODE_ENV || 'development'}`);
       console.log(`🗄️  Database:      ${sequelize.getDialect().toUpperCase()}`);

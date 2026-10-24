@@ -7,12 +7,12 @@ const isProduction = process.env.NODE_ENV === 'production';
 const sessionStore = new SequelizeStore({
   db: sequelize,
   tableName: 'sessions',
-  checkExpirationInterval: 15 * 60 * 1000, // clean up expired sessions every 15 min
-  expiration: 24 * 60 * 60 * 1000 // 24 hours
+  checkExpirationInterval: 15 * 60 * 1000, // Clean expired sessions every 15 minutes
+  expiration: 24 * 60 * 60 * 1000 // 24-hour expiration
 });
 
 const sessionMiddleware = session({
-  name: 'quickpulse.sid',
+  name: 'pollcraft.sid',
   secret: process.env.SESSION_SECRET || 'dev-insecure-secret-key-change-me',
   store: sessionStore,
   resave: false,

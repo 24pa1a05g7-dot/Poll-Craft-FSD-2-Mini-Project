@@ -9,9 +9,14 @@ const {
 const { Op } = require('sequelize');
 
 class AnalyticsService {
-  static async getUserDashboardStats(userId, isAdmin = false) {
-    const pollWhere = isAdmin ? {} : { userId };
-    const surveyWhere = isAdmin ? {} : { userId };
+  // Always strictly isolate user dashboard stats to content created by that specific user
+  static async getUserDashboardStats(userId) {
+    if (!userId) {
+      throw new Error('User ID is required to calculate dashboard statistics.');
+    }
+
+    const pollWhere = { userId };
+    const surveyWhere = { userId };
 
     const totalPolls = await Poll.count({ where: pollWhere });
     const totalSurveys = await Survey.count({ where: surveyWhere });
@@ -71,7 +76,7 @@ class AnalyticsService {
       ]
     });
 
-    // Popular Polls
+    // Popular Polls for current user
     const popularPolls = await Poll.findAll({
       where: pollWhere,
       include: [
@@ -95,6 +100,7 @@ class AnalyticsService {
     };
   }
 
+  // System-wide statistics for the Administrator Console only
   static async getPlatformStats() {
     const totalUsers = await User.count();
     const totalPolls = await Poll.count();

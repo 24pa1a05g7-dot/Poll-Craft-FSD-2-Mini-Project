@@ -9,17 +9,21 @@ const isTest = process.env.NODE_ENV === 'test';
 let sequelize;
 
 if (isTest) {
-  // Use in-memory SQLite for high-speed, isolated automated testing
+  // Isolated in-memory SQLite runner for zero-side-effect automated testing
   sequelize = new Sequelize({
     dialect: 'sqlite',
     storage: ':memory:',
     logging: false
   });
-} else if (process.env.DATABASE_URL) {
-  // Cloud PostgreSQL connection (Render, Neon, Supabase, etc.)
-  const isSslRequired = process.env.DB_SSL === 'true' || isProduction || process.env.DATABASE_URL.includes('sslmode=require');
-  
-  sequelize = new Sequelize(process.env.DATABASE_URL, {
+} else if (process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== '') {
+  const dbUrl = process.env.DATABASE_URL.trim();
+  const isSslRequired = process.env.DB_SSL === 'true' || 
+                        isProduction || 
+                        dbUrl.includes('sslmode=require') || 
+                        dbUrl.includes('supabase.co') ||
+                        dbUrl.includes('pooler.supabase.com');
+
+  sequelize = new Sequelize(dbUrl, {
     dialect: 'postgres',
     protocol: 'postgres',
     logging: isProduction ? false : (msg) => console.log(`[SQL]: ${msg}`),
@@ -37,15 +41,14 @@ if (isTest) {
     }
   });
 } else if (process.env.DB_DIALECT === 'postgres') {
-  // Local or custom PostgreSQL configuration
   const isSslRequired = process.env.DB_SSL === 'true';
   sequelize = new Sequelize(
-    process.env.DB_NAME || 'poll_survey_db',
+    process.env.DB_NAME || 'pollcraft_db',
     process.env.DB_USER || 'postgres',
     process.env.DB_PASSWORD || 'postgres',
     {
       host: process.env.DB_HOST || 'localhost',
-      port: process.env.DB_PORT || 5432,
+      port: parseInt(process.env.DB_PORT, 10) || 5432,
       dialect: 'postgres',
       logging: isProduction ? false : (msg) => console.log(`[SQL]: ${msg}`),
       dialectOptions: isSslRequired ? {
@@ -63,7 +66,7 @@ if (isTest) {
     }
   );
 } else {
-  // Standalone development SQLite mode
+  // Safe local development SQLite fallback
   const dataDir = path.resolve(__dirname, '../../data');
   if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });

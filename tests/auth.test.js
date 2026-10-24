@@ -18,10 +18,10 @@ describe('Authentication & Access Control Test Suite', () => {
   test('GET /auth/register renders registration page', async () => {
     const res = await request(app).get('/auth/register');
     assert.strictEqual(res.status, 200);
-    assert.match(res.text, /Create Your Account/);
+    assert.match(res.text, /Create an [aA]ccount/);
   });
 
-  test('POST /auth/register succeeds with valid details', async () => {
+  test('POST /auth/register succeeds with valid details and always sets role=user', async () => {
     const res = await request(app)
       .post('/auth/register')
       .set('x-test-bypass-csrf', 'true')
@@ -29,7 +29,8 @@ describe('Authentication & Access Control Test Suite', () => {
         name: 'Test Candidate',
         email: 'candidate@test.com',
         password: 'Password123!',
-        confirmPassword: 'Password123!'
+        confirmPassword: 'Password123!',
+        role: 'admin' // Attempted privilege escalation should be ignored
       });
 
     assert.strictEqual(res.status, 302);
@@ -38,8 +39,8 @@ describe('Authentication & Access Control Test Suite', () => {
     const created = await User.findOne({ where: { email: 'candidate@test.com' } });
     assert.ok(created);
     assert.strictEqual(created.name, 'Test Candidate');
-    // First created user gets admin role
-    assert.strictEqual(created.role, 'admin');
+    // Public registration always assigns regular user role (prevents privilege escalation)
+    assert.strictEqual(created.role, 'user');
   });
 
   test('POST /auth/register rejects duplicate email', async () => {
@@ -88,5 +89,13 @@ describe('Authentication & Access Control Test Suite', () => {
     const res = await request(app).get('/dashboard');
     assert.strictEqual(res.status, 302);
     assert.strictEqual(res.headers.location, '/auth/login');
+  });
+
+  test('Dedicated CLI admin script creates administrator account successfully', () => {
+    const { execSync } = require('child_process');
+    const output = execSync('node scripts/create-admin.js cli-admin@pollcraft.io SecureAdmin99! "CLI Admin"', {
+      env: { ...process.env, NODE_ENV: 'test' }
+    }).toString();
+    assert.match(output, /Administrator/);
   });
 });

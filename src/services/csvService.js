@@ -8,10 +8,23 @@ const {
 } = require('../models');
 
 class CsvService {
+  /**
+   * Sanitizes and escapes a cell value for RFC 4180 compliance
+   * and mitigates CSV Formula Injection (DDE injection).
+   */
   static escapeCsvCell(val) {
     if (val === null || val === undefined) return '""';
-    const stringVal = String(val).replace(/"/g, '""');
-    return `"${stringVal}"`;
+    
+    let stringVal = String(val).trim();
+
+    // Prevent CSV Formula Injection: if a cell begins with formula trigger characters,
+    // prepend a single quote to force spreadsheet programs (Excel, Calc) to treat it as plain text.
+    if (/^[=+\-@\t\r]/.test(stringVal)) {
+      stringVal = "'" + stringVal;
+    }
+
+    // Double all internal quotes and wrap in quotes
+    return `"${stringVal.replace(/"/g, '""')}"`;
   }
 
   static async generateSurveyCsv(surveyId) {
@@ -52,7 +65,7 @@ class CsvService {
 
     const questions = survey.questions || [];
 
-    // Build CSV Header row
+    // Construct Header row
     const headers = [
       'Response ID',
       'Submission Timestamp',
@@ -76,7 +89,6 @@ class CsvService {
         resp.respondent ? resp.respondent.email : 'N/A'
       ];
 
-      // Map answers to questions
       for (const q of questions) {
         const ans = resp.answers?.find(a => a.questionId === q.id);
         if (!ans) {

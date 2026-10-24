@@ -4,33 +4,33 @@
 <main class="container my-5">
   <div class="row justify-content-center">
     <div class="col-lg-8">
-      <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4 bg-white">
+      <div class="pc-card p-4 p-md-5">
         <!-- Top bar -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
           <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-light text-primary border"><%= poll.category %></span>
-            <span class="badge <%= poll.isOpen ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' %>">
+            <span class="pc-badge pc-badge-category"><%= poll.category %></span>
+            <span class="pc-badge <%= poll.isOpen ? 'pc-badge-active' : 'pc-badge-closed' %>">
               <%= poll.isOpen ? 'Active Poll' : 'Closed' %>
             </span>
           </div>
           <div class="d-flex gap-2">
-            <button class="btn btn-outline-secondary btn-sm rounded-pill btn-copy-link" data-url="<%= appUrl %>/polls/<%= poll.slug %>">
+            <button class="btn btn-subtle btn-sm btn-copy-link" data-url="<%= appUrl %>/polls/<%= poll.slug %>">
               <i class="bi bi-share me-1"></i> Share Poll
             </button>
             <% if (poll.isOpen) { %>
-              <a href="/polls/<%= poll.slug %>" class="btn btn-primary-light btn-sm rounded-pill">
+              <a href="/polls/<%= poll.slug %>" class="btn btn-primary btn-sm">
                 <i class="bi bi-pencil-square me-1"></i> Go to Vote
               </a>
             <% } %>
           </div>
         </div>
 
-        <h1 class="h3 fw-bold text-dark mb-1"><%= poll.title %></h1>
+        <h1 class="h4 fw-bold text-dark mb-1"><%= poll.title %></h1>
         <% if (poll.description) { %>
           <p class="text-secondary small mb-4"><%= poll.description %></p>
         <% } %>
 
-        <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 border mb-4">
+        <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-2 border mb-4">
           <div class="stat-number text-primary"><%= totalVotes %></div>
           <div>
             <div class="fw-semibold text-dark">Total Votes Recorded</div>
@@ -42,10 +42,10 @@
 
         <!-- Options Progress Breakdown -->
         <div class="mb-5">
-          <h2 class="h5 fw-bold text-dark mb-3">Vote Breakdown</h2>
+          <h2 class="h6 fw-bold text-dark mb-3 text-uppercase text-muted" style="letter-spacing: 0.05em;">Vote Breakdown</h2>
           <div class="d-flex flex-column gap-3">
             <% options.forEach(opt => { %>
-              <div class="p-3 bg-white border rounded-3">
+              <div class="p-3 bg-white border rounded-2">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <span class="fw-medium text-dark"><%= opt.optionText %></span>
                   <span class="fw-bold text-primary"><%= opt.votesCount %> votes (<%= opt.percentage %>%)</span>
@@ -62,16 +62,16 @@
         <% if (totalVotes > 0) { %>
           <div class="row g-4 mb-4">
             <div class="col-md-7">
-              <div class="card p-3 border h-100">
-                <h6 class="fw-bold text-secondary mb-3 small text-uppercase">Distribution Bar Chart</h6>
+              <div class="pc-card p-3 h-100">
+                <h6 class="fw-semibold text-secondary mb-3 small text-uppercase">Distribution Bar Chart</h6>
                 <div style="height: 240px; position: relative;">
                   <canvas id="pollBarChart"></canvas>
                 </div>
               </div>
             </div>
             <div class="col-md-5">
-              <div class="card p-3 border h-100">
-                <h6 class="fw-bold text-secondary mb-3 small text-uppercase">Proportion Doughnut</h6>
+              <div class="pc-card p-3 h-100">
+                <h6 class="fw-semibold text-secondary mb-3 small text-uppercase">Proportion Doughnut</h6>
                 <div style="height: 240px; position: relative;">
                   <canvas id="pollDoughnutChart"></canvas>
                 </div>
@@ -79,8 +79,8 @@
             </div>
           </div>
         <% } else { %>
-          <div class="card p-4 text-center border-0 bg-light rounded-3 mb-4">
-            <p class="text-secondary small mb-0">No votes have been recorded for this poll yet. Be the first to cast a vote!</p>
+          <div class="pc-card p-4 text-center text-muted mb-4">
+            <p class="small mb-0">No votes have been recorded for this poll yet. Be the first to cast a vote!</p>
           </div>
         <% } %>
 

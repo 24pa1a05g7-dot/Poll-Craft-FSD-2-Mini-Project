@@ -4,23 +4,23 @@
 <main class="container my-5">
   <div class="row justify-content-center">
     <div class="col-lg-8">
-      <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4 bg-white">
+      <div class="pc-card p-4 p-md-5">
         <!-- Top Metadata -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
           <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-light text-success border"><%= survey.category %></span>
-            <span class="badge <%= survey.isOpen ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' %>">
+            <span class="pc-badge pc-badge-category"><%= survey.category %></span>
+            <span class="pc-badge <%= survey.isOpen ? 'pc-badge-active' : 'pc-badge-closed' %>">
               <%= survey.isOpen ? 'Active Survey' : 'Closed' %>
             </span>
           </div>
-          <button class="btn btn-outline-secondary btn-sm rounded-pill btn-copy-link" data-url="<%= appUrl %>/surveys/<%= survey.slug %>">
+          <button class="btn btn-subtle btn-sm btn-copy-link" data-url="<%= appUrl %>/surveys/<%= survey.slug %>">
             <i class="bi bi-share me-1"></i> Share Survey
           </button>
         </div>
 
-        <h1 class="h3 fw-bold text-dark mb-2"><%= survey.title %></h1>
+        <h1 class="h4 fw-bold text-dark mb-2"><%= survey.title %></h1>
         <% if (survey.description) { %>
-          <p class="text-secondary mb-4 leading-relaxed"><%= survey.description %></p>
+          <p class="text-secondary small mb-4 leading-relaxed"><%= survey.description %></p>
         <% } %>
 
         <% if (errors && errors.length > 0) { %>
@@ -34,39 +34,39 @@
         <% } %>
 
         <% if (hasResponded) { %>
-          <div class="card bg-success-subtle border-0 p-4 text-center rounded-3 mb-4">
-            <i class="bi bi-check-circle-fill text-success display-6 mb-2"></i>
-            <h5 class="fw-bold text-success mb-1">Response Received!</h5>
+          <div class="pc-card bg-light p-4 text-center mb-4">
+            <i class="bi bi-check-circle-fill text-success fs-2 mb-2"></i>
+            <h5 class="fw-bold text-dark mb-1">Response Received</h5>
             <p class="text-secondary small mb-3">You have already submitted a response to this survey. Thank you for contributing your feedback.</p>
             <div>
-              <a href="/surveys/<%= survey.slug %>/results" class="btn btn-success text-white px-4 rounded-pill">
+              <a href="/surveys/<%= survey.slug %>/results" class="btn btn-primary btn-sm px-4">
                 <i class="bi bi-graph-up me-1"></i> View Aggregate Survey Results
               </a>
             </div>
           </div>
         <% } else if (!survey.isOpen) { %>
-          <div class="card bg-secondary-subtle border-0 p-4 text-center rounded-3 mb-4">
-            <i class="bi bi-lock-fill text-secondary display-6 mb-2"></i>
+          <div class="pc-card bg-light p-4 text-center mb-4">
+            <i class="bi bi-lock-fill text-secondary fs-2 mb-2"></i>
             <h5 class="fw-bold text-dark mb-1">Survey Closed</h5>
             <p class="text-secondary small mb-3">This survey is currently closed to new responses.</p>
             <div>
-              <a href="/surveys/<%= survey.slug %>/results" class="btn btn-primary px-4 rounded-pill">
+              <a href="/surveys/<%= survey.slug %>/results" class="btn btn-primary btn-sm px-4">
                 <i class="bi bi-graph-up me-1"></i> View Results
               </a>
             </div>
           </div>
         <% } else if (survey.requireLogin && !isAuthenticated) { %>
-          <div class="card bg-warning-subtle border-0 p-4 text-center rounded-3 mb-4">
-            <i class="bi bi-shield-exclamation text-warning display-6 mb-2"></i>
+          <div class="pc-card bg-light p-4 text-center mb-4">
+            <i class="bi bi-shield-exclamation text-warning fs-2 mb-2"></i>
             <h5 class="fw-bold text-dark mb-1">Sign-In Required</h5>
             <p class="text-secondary small mb-3">You must be logged in to access and respond to this survey.</p>
             <div class="d-flex justify-content-center gap-2">
-              <a href="/auth/login" class="btn btn-primary px-4 rounded-pill">Sign In</a>
-              <a href="/auth/register" class="btn btn-outline-secondary px-4 rounded-pill">Register</a>
+              <a href="/auth/login" class="btn btn-primary btn-sm px-4">Sign In</a>
+              <a href="/auth/register" class="btn btn-subtle btn-sm px-4">Register</a>
             </div>
           </div>
         <% } else if (!survey.questions || survey.questions.length === 0) { %>
-          <div class="alert alert-info border-0 rounded-3 text-center py-4">
+          <div class="pc-card bg-light text-center py-4 text-muted small">
             This survey has no questions configured yet.
           </div>
         <% } else { %>
@@ -74,11 +74,11 @@
           <form action="/surveys/<%= survey.slug %>/respond" method="POST" novalidate>
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
-            <div class="d-flex flex-column gap-4 mb-4">
+            <div class="d-flex flex-column gap-3 mb-4">
               <% survey.questions.forEach((q, idx) => { %>
-                <div class="card p-4 border rounded-3 bg-light">
+                <div class="p-3 border rounded-2 bg-light">
                   <div class="d-flex justify-content-between align-items-start mb-2">
-                    <label class="form-label fw-bold text-dark fs-6 mb-0">
+                    <label class="form-label fw-semibold text-dark fs-6 mb-0">
                       <%= idx + 1 %>. <%= q.questionText %>
                       <% if (q.isRequired) { %>
                         <span class="text-danger" title="Required">*</span>
@@ -95,7 +95,7 @@
                       <% q.options.forEach(opt => { %>
                         <div class="form-check">
                           <input class="form-check-input" type="radio" name="q_<%= q.id %>" id="opt_<%= opt.id %>" value="<%= opt.id %>" <%= q.isRequired ? 'required' : '' %>>
-                          <label class="form-check-label" for="opt_<%= opt.id %>">
+                          <label class="form-check-label text-dark" for="opt_<%= opt.id %>">
                             <%= opt.optionText %>
                           </label>
                         </div>
@@ -107,7 +107,7 @@
                       <% q.options.forEach(opt => { %>
                         <div class="form-check">
                           <input class="form-check-input" type="checkbox" name="q_<%= q.id %>[]" id="opt_<%= opt.id %>" value="<%= opt.id %>">
-                          <label class="form-check-label" for="opt_<%= opt.id %>">
+                          <label class="form-check-label text-dark" for="opt_<%= opt.id %>">
                             <%= opt.optionText %>
                           </label>
                         </div>
@@ -118,7 +118,7 @@
                     <input type="text" class="form-control" name="q_<%= q.id %>" placeholder="Your answer..." <%= q.isRequired ? 'required' : '' %> maxlength="255">
 
                   <% } else if (q.questionType === 'long_text') { %>
-                    <textarea class="form-control" name="q_<%= q.id %>" rows="4" placeholder="Your detailed feedback..." <%= q.isRequired ? 'required' : '' %>></textarea>
+                    <textarea class="form-control" name="q_<%= q.id %>" rows="3" placeholder="Your detailed feedback..." <%= q.isRequired ? 'required' : '' %>></textarea>
 
                   <% } else if (q.questionType === 'rating') { %>
                     <div class="rating-group">
@@ -155,7 +155,7 @@
             </div>
 
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-3 border-top">
-              <button type="submit" class="btn btn-success text-white px-5 py-2 rounded-pill fw-medium">
+              <button type="submit" class="btn btn-primary px-4 py-2 fw-medium">
                 Submit Completed Survey
               </button>
               <a href="/surveys/<%= survey.slug %>/results" class="text-secondary small text-decoration-none">

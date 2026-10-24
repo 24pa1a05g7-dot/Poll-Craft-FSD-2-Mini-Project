@@ -209,7 +209,7 @@ class PollService {
     };
   }
 
-  static async updatePoll(pollId, userId, updateData, isAdmin = false) {
+  static async updatePoll(pollId, userId, updateData) {
     const poll = await Poll.findByPk(pollId, {
       include: [{ model: PollOption, as: 'options' }]
     });
@@ -218,7 +218,7 @@ class PollService {
       throw new Error('Poll not found.');
     }
 
-    if (poll.userId !== userId && !isAdmin) {
+    if (poll.userId !== userId) {
       throw new Error('Unauthorized: You do not have permission to modify this poll.');
     }
 
@@ -235,12 +235,12 @@ class PollService {
     return poll;
   }
 
-  static async deletePoll(pollId, userId, isAdmin = false) {
+  static async deletePoll(pollId, userId) {
     const poll = await Poll.findByPk(pollId);
     if (!poll) {
       throw new Error('Poll not found.');
     }
-    if (poll.userId !== userId && !isAdmin) {
+    if (poll.userId !== userId) {
       throw new Error('Unauthorized: You do not have permission to delete this poll.');
     }
     await poll.destroy();

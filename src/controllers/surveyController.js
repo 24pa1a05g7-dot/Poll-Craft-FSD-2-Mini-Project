@@ -17,7 +17,7 @@ class SurveyController {
       });
 
       res.render('pages/surveys/index', {
-        title: 'Explore Surveys - QuickPulse',
+        title: 'Explore Surveys - PollCraft',
         surveys,
         category,
         search,
@@ -36,7 +36,7 @@ class SurveyController {
 
   static renderCreateSurvey(req, res) {
     res.render('pages/surveys/create', {
-      title: 'Create a New Survey - QuickPulse',
+      title: 'Create a New Survey - PollCraft',
       formData: {},
       errors: []
     });
@@ -45,6 +45,7 @@ class SurveyController {
   static async createSurvey(req, res) {
     const { title, description, category, isPublic, requireLogin, allowAnonymous, expiresAt } = req.body;
     try {
+      // Validate inputs and prevent mass-assignment
       const survey = await SurveyService.createSurvey(req.user.id, {
         title,
         description,
@@ -55,12 +56,12 @@ class SurveyController {
         expiresAt: expiresAt || null
       });
 
-      req.flash('success', 'Survey initialized! Now add your survey questions in the builder below.');
+      req.flash('success', 'Survey initialized! Add your questionnaire questions in the builder below.');
       return res.redirect(`/surveys/${survey.id}/builder`);
     } catch (err) {
       console.error('[CREATE SURVEY ERROR]:', err);
       return res.status(400).render('pages/surveys/create', {
-        title: 'Create a New Survey - QuickPulse',
+        title: 'Create a New Survey - PollCraft',
         formData: req.body,
         errors: [err.message || 'Failed to create survey. Please check inputs.']
       });
@@ -79,16 +80,18 @@ class SurveyController {
         });
       }
 
-      const isAdmin = req.user && req.user.role === 'admin';
-      if (survey.userId !== req.user.id && !isAdmin) {
-        req.flash('error', 'Unauthorized access to survey builder.');
-        return res.redirect('/dashboard');
+      // Strict ownership check: only the survey author can manage the question builder
+      if (survey.userId !== req.user.id) {
+        return res.status(403).render('pages/errors/403', {
+          title: '403 Forbidden - Access Denied',
+          message: 'You do not have permission to manage questions on a survey you do not own.'
+        });
       }
 
       const responseCount = await SurveyService.countSurveyResponses(survey.id);
 
       res.render('pages/surveys/builder', {
-        title: `Survey Builder: ${survey.title}`,
+        title: `Survey Builder: ${survey.title} - PollCraft`,
         survey,
         responseCount,
         isLocked: responseCount > 0,
@@ -106,7 +109,19 @@ class SurveyController {
   static async addQuestion(req, res) {
     const surveyId = req.params.id;
     try {
-      const isAdmin = req.user && req.user.role === 'admin';
+      const survey = await Survey.findByPk(surveyId);
+      if (!survey) {
+        return res.status(404).render('pages/errors/404', { title: 'Survey Not Found' });
+      }
+
+      // Strict ownership check
+      if (survey.userId !== req.user.id) {
+        return res.status(403).render('pages/errors/403', {
+          title: '403 Forbidden - Access Denied',
+          message: 'You do not have permission to modify this survey.'
+        });
+      }
+
       const { questionText, helpText, questionType, isRequired, options } = req.body;
 
       let parsedOptions = [];
@@ -124,7 +139,7 @@ class SurveyController {
         questionType,
         isRequired: isRequired === 'true' || isRequired === 'on',
         options: parsedOptions
-      }, isAdmin);
+      });
 
       req.flash('success', 'Question added to survey.');
       return res.redirect(`/surveys/${surveyId}/builder`);
@@ -138,8 +153,20 @@ class SurveyController {
   static async deleteQuestion(req, res) {
     const { surveyId, questionId } = req.params;
     try {
-      const isAdmin = req.user && req.user.role === 'admin';
-      await SurveyService.deleteQuestion(questionId, req.user.id, isAdmin);
+      const survey = await Survey.findByPk(surveyId);
+      if (!survey) {
+        return res.status(404).render('pages/errors/404', { title: 'Survey Not Found' });
+      }
+
+      // Strict ownership check
+      if (survey.userId !== req.user.id) {
+        return res.status(403).render('pages/errors/403', {
+          title: '403 Forbidden - Access Denied',
+          message: 'You do not have permission to delete questions from this survey.'
+        });
+      }
+
+      await SurveyService.deleteQuestion(questionId, req.user.id);
 
       req.flash('success', 'Question removed from survey.');
       return res.redirect(`/surveys/${surveyId}/builder`);
@@ -162,14 +189,22 @@ class SurveyController {
         return res.status(404).render('pages/errors/404', { title: 'Survey Not Found' });
       }
 
-      const isAdmin = req.user && req.user.role === 'admin';
-      if (survey.userId !== req.user.id && !isAdmin) {
-        req.flash('error', 'Unauthorized.');
-        return res.redirect('/dashboard');
+      // Strict ownership check
+      if (survey.userId !== req.user.id) {
+        return res.status(403).render('pages/errors/403', {
+          title: '403 Forbidden - Access Denied',
+          message: 'You do not have permission to change this survey status.'
+        });
       }
 
       if (status === 'published' && (!survey.questions || survey.questions.length === 0)) {
         req.flash('error', 'Cannot publish a survey without at least one question.');
+        return res.redirect(`/surveys/${surveyId}/builder`);
+      }
+
+      // Whitelist valid status transitions
+      if (!['draft', 'published', 'closed'].includes(status)) {
+        req.flash('error', 'Invalid survey status specified.');
         return res.redirect(`/surveys/${surveyId}/builder`);
       }
 
@@ -197,6 +232,17 @@ class SurveyController {
         });
       }
 
+      // Draft survey response forms are accessible only by the creator for testing
+      if (survey.status === 'draft') {
+        const isOwner = req.user && req.user.id === survey.userId;
+        if (!isOwner) {
+          return res.status(404).render('pages/errors/404', {
+            title: 'Survey Not Available',
+            message: 'This survey is currently an unpublished draft.'
+          });
+        }
+      }
+
       const userId = req.user ? req.user.id : null;
       const sessionId = req.sessionID;
       const ip = req.ip || req.connection.remoteAddress;
@@ -204,7 +250,7 @@ class SurveyController {
       const hasResponded = await SurveyService.hasUserResponded(survey.id, { userId, sessionId, ip });
 
       res.render('pages/surveys/respond', {
-        title: `${survey.title} - QuickPulse Survey`,
+        title: `${survey.title} - PollCraft Survey`,
         survey,
         hasResponded,
         errors: [],
@@ -232,12 +278,14 @@ class SurveyController {
       const sessionId = req.sessionID;
       const ip = req.ip || req.connection.remoteAddress;
 
-      // Extract answers from req.body
+      // Extract only valid question answers prefixed with q_
       const answers = {};
       for (const key of Object.keys(req.body)) {
         if (key.startsWith('q_')) {
           const qId = parseInt(key.replace('q_', ''), 10);
-          answers[qId] = req.body[key];
+          if (!isNaN(qId)) {
+            answers[qId] = req.body[key];
+          }
         }
       }
 
@@ -255,7 +303,7 @@ class SurveyController {
       console.error('[SUBMIT RESPONSE ERROR]:', err);
       const survey = await SurveyService.getSurveyWithQuestions(identifier);
       return res.status(400).render('pages/surveys/respond', {
-        title: survey ? `${survey.title} - QuickPulse Survey` : 'Error',
+        title: survey ? `${survey.title} - PollCraft Survey` : 'Error',
         survey,
         hasResponded: false,
         errors: [err.message || 'Submission error. Please check your answers.'],
@@ -277,16 +325,32 @@ class SurveyController {
         });
       }
 
+      const isOwner = req.user && req.user.id === survey.userId;
+
+      // Draft survey results are restricted to owner
+      if (survey.status === 'draft' && !isOwner) {
+        return res.status(404).render('pages/errors/404', {
+          title: 'Survey Not Found',
+          message: 'This survey is unpublished.'
+        });
+      }
+
+      // Private/unlisted survey results are strictly restricted to owner
+      if (!survey.isPublic && !isOwner) {
+        return res.status(403).render('pages/errors/403', {
+          title: '403 Forbidden - Private Results',
+          message: 'Analytics for this private survey are restricted to the author.'
+        });
+      }
+
       const analytics = await SurveyService.getSurveyAnalytics(survey.id);
 
-      const isOwnerOrAdmin = req.user && (req.user.id === survey.userId || req.user.role === 'admin');
-
       res.render('pages/surveys/results', {
-        title: `Results: ${survey.title} - QuickPulse`,
+        title: `Results: ${survey.title} - PollCraft`,
         survey: analytics.survey,
         totalResponses: analytics.totalResponses,
         questions: analytics.questions,
-        isOwnerOrAdmin,
+        isOwner,
         appUrl: process.env.APP_URL || `http://${req.headers.host}`
       });
     } catch (err) {
@@ -304,12 +368,14 @@ class SurveyController {
       const survey = await Survey.findByPk(surveyId, {
         include: [{ model: SurveyQuestion, as: 'questions' }]
       });
-      if (!survey) return res.status(404).render('pages/errors/404');
+      if (!survey) return res.status(404).render('pages/errors/404', { title: 'Survey Not Found' });
 
-      const isAdmin = req.user && req.user.role === 'admin';
-      if (survey.userId !== req.user.id && !isAdmin) {
-        req.flash('error', 'Unauthorized to inspect individual survey responses.');
-        return res.redirect('/dashboard');
+      // Strict ownership check: only the survey author can inspect individual responses
+      if (survey.userId !== req.user.id) {
+        return res.status(403).render('pages/errors/403', {
+          title: '403 Forbidden - Access Denied',
+          message: 'You are not authorized to inspect individual survey responses for this questionnaire.'
+        });
       }
 
       const responses = await SurveyResponse.findAll({
@@ -329,7 +395,7 @@ class SurveyController {
       });
 
       res.render('pages/surveys/responses', {
-        title: `Individual Submissions: ${survey.title}`,
+        title: `Individual Submissions: ${survey.title} - PollCraft`,
         survey,
         responses
       });
@@ -348,14 +414,14 @@ class SurveyController {
       const survey = await Survey.findByPk(surveyId);
       if (!survey) return res.status(404).send('Survey not found');
 
-      const isAdmin = req.user && req.user.role === 'admin';
-      if (survey.userId !== req.user.id && !isAdmin) {
+      // Strict ownership check: only the author can export CSV data
+      if (survey.userId !== req.user.id) {
         return res.status(403).send('Forbidden: Not authorized to export responses for this survey.');
       }
 
       const csvData = await CsvService.generateSurveyCsv(surveyId);
 
-      const filename = `survey_${surveyId}_responses_${new Date().toISOString().slice(0, 10)}.csv`;
+      const filename = `pollcraft_survey_${surveyId}_responses_${new Date().toISOString().slice(0, 10)}.csv`;
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
       return res.status(200).send(csvData);
@@ -369,12 +435,14 @@ class SurveyController {
     const surveyId = req.params.id;
     try {
       const survey = await Survey.findByPk(surveyId);
-      if (!survey) return res.status(404).render('pages/errors/404');
+      if (!survey) return res.status(404).render('pages/errors/404', { title: 'Survey Not Found' });
 
-      const isAdmin = req.user && req.user.role === 'admin';
-      if (survey.userId !== req.user.id && !isAdmin) {
-        req.flash('error', 'Unauthorized.');
-        return res.redirect('/dashboard');
+      // Strict ownership check
+      if (survey.userId !== req.user.id) {
+        return res.status(403).render('pages/errors/403', {
+          title: '403 Forbidden - Access Denied',
+          message: 'You do not have permission to delete this survey.'
+        });
       }
 
       await survey.destroy();

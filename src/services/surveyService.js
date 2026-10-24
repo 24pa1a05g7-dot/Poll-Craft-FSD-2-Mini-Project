@@ -94,10 +94,10 @@ class SurveyService {
     return !!existing;
   }
 
-  static async addQuestion(surveyId, userId, questionData, isAdmin = false) {
+  static async addQuestion(surveyId, userId, questionData) {
     const survey = await Survey.findByPk(surveyId);
     if (!survey) throw new Error('Survey not found.');
-    if (survey.userId !== userId && !isAdmin) {
+    if (survey.userId !== userId) {
       throw new Error('Unauthorized to modify this survey.');
     }
 
@@ -150,14 +150,14 @@ class SurveyService {
     });
   }
 
-  static async deleteQuestion(questionId, userId, isAdmin = false) {
+  static async deleteQuestion(questionId, userId) {
     const question = await SurveyQuestion.findByPk(questionId, {
       include: [{ model: Survey }]
     });
     if (!question) throw new Error('Question not found.');
 
     const survey = question.Survey;
-    if (survey.userId !== userId && !isAdmin) {
+    if (survey.userId !== userId) {
       throw new Error('Unauthorized.');
     }
 

@@ -82,7 +82,7 @@ app.use(attachUser);
 app.use((req, res, next) => {
   res.locals.successMessages = req.flash('success');
   res.locals.errorMessages = req.flash('error');
-  res.locals.appName = process.env.APP_NAME || 'QuickPulse';
+  res.locals.appName = process.env.APP_NAME || 'PollCraft';
   res.locals.currentPath = req.path;
   next();
 });

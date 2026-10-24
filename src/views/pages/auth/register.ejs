@@ -3,12 +3,14 @@
 
 <main class="container my-5">
   <div class="row justify-content-center">
-    <div class="col-md-5">
-      <div class="card p-4 p-md-5 shadow-sm border-0 rounded-4 bg-white">
+    <div class="col-md-5 col-lg-4">
+      <div class="pc-card p-4 p-md-5 bg-white">
         <div class="text-center mb-4">
-          <div class="brand-badge d-inline-block fs-4 mb-2">📊 QP</div>
-          <h2 class="h4 fw-bold text-dark">Create Your Account</h2>
-          <p class="text-secondary small">Start creating interactive polls and surveys in seconds.</p>
+          <div class="pc-brand-icon mx-auto mb-3" style="width: 36px; height: 36px; font-size: 1.1rem;">
+            <i class="bi bi-bar-chart-fill"></i>
+          </div>
+          <h2 class="h5 fw-bold text-dark mb-1">Create an Account</h2>
+          <p class="text-secondary small mb-0">Join PollCraft to create polls and surveys.</p>
         </div>
 
         <% if (errors && errors.length > 0) { %>
@@ -26,43 +28,31 @@
 
           <div class="mb-3">
             <label for="name" class="form-label small fw-semibold text-secondary">Full Name</label>
-            <div class="input-group">
-              <span class="input-group-text bg-light text-muted"><i class="bi bi-person"></i></span>
-              <input type="text" class="form-control" id="name" name="name" value="<%= formData ? formData.name || '' : '' %>" placeholder="e.g. Alex Rivera" required autofocus minlength="2">
-            </div>
+            <input type="text" class="form-control form-control-sm" id="name" name="name" value="<%= formData ? formData.name || '' : '' %>" placeholder="e.g. Alex Rivera" required autofocus minlength="2">
           </div>
 
           <div class="mb-3">
             <label for="email" class="form-label small fw-semibold text-secondary">Email Address</label>
-            <div class="input-group">
-              <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
-              <input type="email" class="form-control" id="email" name="email" value="<%= formData ? formData.email || '' : '' %>" placeholder="name@domain.com" required>
-            </div>
+            <input type="email" class="form-control form-control-sm" id="email" name="email" value="<%= formData ? formData.email || '' : '' %>" placeholder="name@domain.com" required>
           </div>
 
           <div class="mb-3">
             <label for="password" class="form-label small fw-semibold text-secondary">Password (Min 8 Characters)</label>
-            <div class="input-group">
-              <span class="input-group-text bg-light text-muted"><i class="bi bi-lock"></i></span>
-              <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" minlength="8" required>
-            </div>
+            <input type="password" class="form-control form-control-sm" id="password" name="password" placeholder="••••••••" minlength="8" required>
           </div>
 
           <div class="mb-4">
             <label for="confirmPassword" class="form-label small fw-semibold text-secondary">Confirm Password</label>
-            <div class="input-group">
-              <span class="input-group-text bg-light text-muted"><i class="bi bi-shield-check"></i></span>
-              <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="••••••••" minlength="8" required>
-            </div>
+            <input type="password" class="form-control form-control-sm" id="confirmPassword" name="confirmPassword" placeholder="••••••••" minlength="8" required>
           </div>
 
-          <button type="submit" class="btn btn-primary w-100 py-2 rounded-3 mb-3 fw-medium">
+          <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
             Register Account
           </button>
         </form>
 
         <div class="text-center small text-secondary">
-          Already have an account? <a href="/auth/login" class="fw-semibold text-primary text-decoration-none">Sign In</a>
+          Already have an account? <a href="/auth/login" class="text-dark fw-semibold text-decoration-none">Sign In</a>
         </div>
       </div>
     </div>

@@ -4,37 +4,37 @@
 <main class="container my-5">
   <div class="row justify-content-center">
     <div class="col-lg-9">
-      <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4 bg-white">
+      <div class="pc-card p-4 p-md-5">
         <!-- Top bar -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
           <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-light text-success border"><%= survey.category %></span>
-            <span class="badge <%= survey.isOpen ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' %>">
+            <span class="pc-badge pc-badge-category"><%= survey.category %></span>
+            <span class="pc-badge <%= survey.isOpen ? 'pc-badge-active' : 'pc-badge-closed' %>">
               <%= survey.isOpen ? 'Active Survey' : 'Closed' %>
             </span>
           </div>
 
           <div class="d-flex flex-wrap gap-2">
-            <button class="btn btn-outline-secondary btn-sm rounded-pill btn-copy-link" data-url="<%= appUrl %>/surveys/<%= survey.slug %>">
+            <button class="btn btn-subtle btn-sm btn-copy-link" data-url="<%= appUrl %>/surveys/<%= survey.slug %>">
               <i class="bi bi-share me-1"></i> Share
             </button>
             <% if (isOwnerOrAdmin) { %>
-              <a href="/surveys/<%= survey.id %>/export/csv" class="btn btn-outline-success btn-sm rounded-pill">
+              <a href="/surveys/<%= survey.id %>/export/csv" class="btn btn-subtle btn-sm">
                 <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
               </a>
-              <a href="/surveys/<%= survey.id %>/responses" class="btn btn-outline-primary btn-sm rounded-pill">
+              <a href="/surveys/<%= survey.id %>/responses" class="btn btn-subtle btn-sm">
                 <i class="bi bi-people me-1"></i> Individual Responses
               </a>
             <% } %>
           </div>
         </div>
 
-        <h1 class="h3 fw-bold text-dark mb-1"><%= survey.title %></h1>
+        <h1 class="h4 fw-bold text-dark mb-1"><%= survey.title %></h1>
         <p class="text-secondary small mb-4">Survey analytics and aggregate question responses.</p>
 
         <!-- Total Submissions Banner -->
-        <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 border mb-5">
-          <div class="stat-number text-success"><%= totalResponses %></div>
+        <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-2 border mb-5">
+          <div class="stat-number text-primary"><%= totalResponses %></div>
           <div>
             <div class="fw-semibold text-dark">Total Questionnaire Submissions</div>
             <div class="small text-muted">
@@ -44,13 +44,13 @@
         </div>
 
         <% if (totalResponses === 0) { %>
-          <div class="card p-5 text-center border-0 bg-light rounded-4 mb-4">
-            <div class="display-6 text-muted mb-2"><i class="bi bi-inbox"></i></div>
-            <h5 class="fw-bold text-dark">No responses recorded yet</h5>
+          <div class="pc-card p-5 text-center text-muted mb-4">
+            <div class="mb-2"><i class="bi bi-inbox fs-3 text-secondary"></i></div>
+            <h5 class="h6 fw-bold text-dark">No responses recorded yet</h5>
             <p class="text-secondary small mb-3">When participants submit their answers, aggregate charts and tables will appear here in real time.</p>
             <% if (survey.isOpen) { %>
               <div>
-                <a href="/surveys/<%= survey.slug %>" class="btn btn-success text-white px-4 rounded-pill">
+                <a href="/surveys/<%= survey.slug %>" class="btn btn-primary btn-sm px-4">
                   <i class="bi bi-pencil-square me-1"></i> Be the First to Respond
                 </a>
               </div>
@@ -60,16 +60,16 @@
           <!-- Question Breakdown Cards -->
           <div class="d-flex flex-column gap-4 mb-5">
             <% questions.forEach((q, idx) => { %>
-              <div class="card p-4 border rounded-3 bg-white shadow-sm">
+              <div class="pc-card p-4">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                   <div>
-                    <span class="badge bg-light text-secondary border me-1">Q<%= idx + 1 %></span>
-                    <span class="badge bg-primary-subtle text-primary border text-capitalize"><%= q.questionType.replace('_', ' ') %></span>
+                    <span class="pc-badge bg-light text-secondary border me-1">Q<%= idx + 1 %></span>
+                    <span class="pc-badge pc-badge-category text-capitalize"><%= q.questionType.replace('_', ' ') %></span>
                   </div>
                   <span class="small text-muted"><%= q.totalAnswers %> answer(s)</span>
                 </div>
 
-                <h5 class="fw-bold text-dark mb-3"><%= q.questionText %></h5>
+                <h5 class="fw-semibold fs-6 text-dark mb-3"><%= q.questionText %></h5>
 
                 <!-- Choice Questions Breakdown -->
                 <% if (['single_choice', 'multiple_choice'].includes(q.questionType) && q.data && q.data.options) { %>
@@ -77,7 +77,7 @@
                     <div class="col-md-7">
                       <div class="d-flex flex-column gap-2">
                         <% q.data.options.forEach(opt => { %>
-                          <div class="p-2 border rounded bg-light">
+                          <div class="p-2 border rounded-2 bg-light">
                             <div class="d-flex justify-content-between small fw-medium mb-1">
                               <span><%= opt.text %></span>
                               <span class="text-primary fw-bold"><%= opt.count %> (<%= opt.percentage %>%)</span>
@@ -103,12 +103,13 @@
                       renderDoughnutChart('chart-q-<%= q.id %>', labels, counts);
                     });
                   </script>
+                <% } %>
 
                 <!-- Rating Question Breakdown -->
                 <% if (q.questionType === 'rating' && q.data) { %>
                   <div class="row g-3 align-items-center mb-3">
                     <div class="col-md-4 text-center border-end">
-                      <div class="display-4 fw-bold text-warning mb-1"><%= q.data.average %></div>
+                      <div class="display-5 fw-bold text-warning mb-1"><%= q.data.average %></div>
                       <div class="text-warning mb-1">
                         <i class="bi bi-star-fill"></i>
                         <i class="bi bi-star-fill"></i>
@@ -137,14 +138,14 @@
                 <% if (q.questionType === 'yes_no' && q.data) { %>
                   <div class="row g-3 mb-2">
                     <div class="col-6">
-                      <div class="p-3 bg-success-subtle border border-success-subtle rounded-3 text-center">
-                        <div class="h4 fw-bold text-success mb-1"><%= q.data.yes %> (<%= q.data.yesPercentage %>%)</div>
+                      <div class="p-3 bg-light border border-success-subtle rounded-2 text-center">
+                        <div class="h5 fw-bold text-success mb-1"><%= q.data.yes %> (<%= q.data.yesPercentage %>%)</div>
                         <div class="small text-success fw-medium"><i class="bi bi-hand-thumbs-up me-1"></i> Yes</div>
                       </div>
                     </div>
                     <div class="col-6">
-                      <div class="p-3 bg-danger-subtle border border-danger-subtle rounded-3 text-center">
-                        <div class="h4 fw-bold text-danger mb-1"><%= q.data.no %> (<%= q.data.noPercentage %>%)</div>
+                      <div class="p-3 bg-light border border-danger-subtle rounded-2 text-center">
+                        <div class="h5 fw-bold text-danger mb-1"><%= q.data.no %> (<%= q.data.noPercentage %>%)</div>
                         <div class="small text-danger fw-medium"><i class="bi bi-hand-thumbs-down me-1"></i> No</div>
                       </div>
                     </div>
@@ -153,7 +154,7 @@
 
                 <!-- Text Responses Table -->
                 <% if (['short_text', 'long_text'].includes(q.questionType) && q.data && q.data.sampleResponses) { %>
-                  <div class="bg-light p-3 rounded-3 border">
+                  <div class="bg-light p-3 rounded-2 border">
                     <div class="small fw-semibold text-secondary mb-2">
                       Recent Qualitative Submissions (<%= q.data.sampleResponses.length %>):
                     </div>
@@ -162,7 +163,7 @@
                     <% } else { %>
                       <div class="d-flex flex-column gap-2" style="max-height: 250px; overflow-y: auto;">
                         <% q.data.sampleResponses.forEach(txt => { %>
-                          <div class="p-2 bg-white border rounded small text-dark">
+                          <div class="p-2 bg-white border rounded-2 small text-dark">
                             <i class="bi bi-chat-quote text-muted me-2"></i><%= txt %>
                           </div>
                         <% }) %>

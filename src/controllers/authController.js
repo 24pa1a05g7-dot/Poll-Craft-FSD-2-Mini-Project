@@ -3,7 +3,7 @@ const { User } = require('../models');
 class AuthController {
   static renderRegister(req, res) {
     res.render('pages/auth/register', {
-      title: 'Create an Account - QuickPulse',
+      title: 'Create an Account - PollCraft',
       formData: {},
       errors: []
     });
@@ -13,15 +13,15 @@ class AuthController {
     const { name, email, password, confirmPassword } = req.body;
     const errors = [];
 
-    if (!name || name.trim().length < 2) {
+    if (!name || typeof name !== 'string' || name.trim().length < 2) {
       errors.push('Full name must be at least 2 characters long.');
     }
 
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!email || typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       errors.push('Please provide a valid email address.');
     }
 
-    if (!password || password.length < 8) {
+    if (!password || typeof password !== 'string' || password.length < 8) {
       errors.push('Password must be at least 8 characters long.');
     }
 
@@ -31,7 +31,7 @@ class AuthController {
 
     if (errors.length > 0) {
       return res.status(400).render('pages/auth/register', {
-        title: 'Create an Account - QuickPulse',
+        title: 'Create an Account - PollCraft',
         formData: { name, email },
         errors
       });
@@ -43,37 +43,48 @@ class AuthController {
 
       if (existingUser) {
         return res.status(409).render('pages/auth/register', {
-          title: 'Create an Account - QuickPulse',
+          title: 'Create an Account - PollCraft',
           formData: { name, email },
           errors: ['An account with this email address already exists. Please log in.']
         });
       }
 
-      // Check if this is the first registered user, make admin if desired, otherwise regular 'user'
-      const userCount = await User.count();
-      const role = userCount === 0 ? 'admin' : 'user';
-
+      // Public registration ALWAYS creates a regular user account.
+      // Roles supplied by the client are strictly ignored to prevent privilege escalation.
       const newUser = await User.create({
         name: name.trim(),
         email: normalizedEmail,
         password,
-        role,
+        role: 'user',
         isActive: true
       });
 
-      // Session regeneration to prevent session fixation attacks
+      // Session regeneration prevents session-fixation attacks
       req.session.regenerate((err) => {
         if (err) {
-          console.error('[SESSION ERROR]:', err);
+          console.error('[SESSION REGENERATE ERROR - REGISTER]:', err);
+          return res.status(500).render('pages/auth/register', {
+            title: 'Create an Account - PollCraft',
+            formData: { name, email },
+            errors: ['Unable to initialize a secure login session. Please try logging in directly.']
+          });
         }
+
         req.session.userId = newUser.id;
-        req.flash('success', `Welcome to QuickPulse, ${newUser.name}! Your account has been created.`);
-        return res.redirect('/dashboard');
+        req.flash('success', `Welcome to PollCraft, ${newUser.name}! Your account has been created.`);
+
+        // Explicitly persist session state before redirect to prevent race conditions
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error('[SESSION SAVE ERROR - REGISTER]:', saveErr);
+          }
+          return res.redirect('/dashboard');
+        });
       });
     } catch (err) {
       console.error('[REGISTRATION ERROR]:', err);
       return res.status(500).render('pages/auth/register', {
-        title: 'Create an Account - QuickPulse',
+        title: 'Create an Account - PollCraft',
         formData: { name, email },
         errors: ['An unexpected error occurred while creating your account. Please try again.']
       });
@@ -82,7 +93,7 @@ class AuthController {
 
   static renderLogin(req, res) {
     res.render('pages/auth/login', {
-      title: 'Sign In - QuickPulse',
+      title: 'Sign In - PollCraft',
       formData: {},
       errors: []
     });
@@ -92,11 +103,11 @@ class AuthController {
     const { email, password } = req.body;
     const errors = [];
 
-    if (!email || !password) {
+    if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
       errors.push('Please enter both your email address and password.');
       return res.status(400).render('pages/auth/login', {
-        title: 'Sign In - QuickPulse',
-        formData: { email },
+        title: 'Sign In - PollCraft',
+        formData: { email: typeof email === 'string' ? email : '' },
         errors
       });
     }
@@ -107,7 +118,7 @@ class AuthController {
 
       if (!user) {
         return res.status(401).render('pages/auth/login', {
-          title: 'Sign In - QuickPulse',
+          title: 'Sign In - PollCraft',
           formData: { email },
           errors: ['Invalid email or password combination.']
         });
@@ -115,7 +126,7 @@ class AuthController {
 
       if (!user.isActive) {
         return res.status(403).render('pages/auth/login', {
-          title: 'Sign In - QuickPulse',
+          title: 'Sign In - PollCraft',
           formData: { email },
           errors: ['Your account has been deactivated. Please contact an administrator.']
         });
@@ -124,27 +135,36 @@ class AuthController {
       const isMatch = await user.comparePassword(password);
       if (!isMatch) {
         return res.status(401).render('pages/auth/login', {
-          title: 'Sign In - QuickPulse',
+          title: 'Sign In - PollCraft',
           formData: { email },
           errors: ['Invalid email or password combination.']
         });
       }
 
-      // Regenerate session ID to prevent session fixation attacks
-      const returnTo = req.session.returnTo;
+      // Safe destination redirect (prevent open redirects)
+      let destination = '/dashboard';
+      if (req.session.returnTo && req.session.returnTo.startsWith('/') && !req.session.returnTo.startsWith('//')) {
+        destination = req.session.returnTo;
+      }
+
       req.session.regenerate((err) => {
         if (err) {
-          console.error('[SESSION REGENERATE ERROR]:', err);
+          console.error('[SESSION REGENERATE ERROR - LOGIN]:', err);
         }
         req.session.userId = user.id;
         req.flash('success', `Welcome back, ${user.name}!`);
-        const destination = returnTo || '/dashboard';
-        return res.redirect(destination);
+
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error('[SESSION SAVE ERROR - LOGIN]:', saveErr);
+          }
+          return res.redirect(destination);
+        });
       });
     } catch (err) {
       console.error('[LOGIN ERROR]:', err);
       return res.status(500).render('pages/auth/login', {
-        title: 'Sign In - QuickPulse',
+        title: 'Sign In - PollCraft',
         formData: { email },
         errors: ['An internal error occurred during login. Please try again.']
       });
@@ -152,13 +172,18 @@ class AuthController {
   }
 
   static logout(req, res) {
-    req.session.destroy((err) => {
-      if (err) {
-        console.error('[LOGOUT ERROR]:', err);
-      }
-      res.clearCookie('quickpulse.sid');
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('[LOGOUT ERROR]:', err);
+        }
+        res.clearCookie('pollcraft.sid');
+        res.clearCookie('quickpulse.sid');
+        return res.redirect('/auth/login');
+      });
+    } else {
       return res.redirect('/auth/login');
-    });
+    }
   }
 }
 

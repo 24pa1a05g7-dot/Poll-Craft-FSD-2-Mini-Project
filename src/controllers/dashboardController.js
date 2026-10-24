@@ -3,13 +3,10 @@ const AnalyticsService = require('../services/analyticsService');
 class DashboardController {
   static async renderDashboard(req, res) {
     try {
-      const stats = await AnalyticsService.getUserDashboardStats(
-        req.user.id,
-        req.user.role === 'admin'
-      );
+      const stats = await AnalyticsService.getUserDashboardStats(req.user.id);
 
       res.render('pages/dashboard/index', {
-        title: 'User Dashboard - QuickPulse',
+        title: 'User Dashboard - PollCraft',
         stats,
         user: req.user
       });
@@ -17,7 +14,7 @@ class DashboardController {
       console.error('[DASHBOARD ERROR]:', err);
       req.flash('error', 'Unable to load dashboard statistics at this moment.');
       res.render('pages/dashboard/index', {
-        title: 'User Dashboard - QuickPulse',
+        title: 'User Dashboard - PollCraft',
         stats: {
           totalPolls: 0,
           totalSurveys: 0,

@@ -13,22 +13,22 @@
           Analytics
         </a>
       </div>
-      <h1 class="h3 fw-bold text-dark m-0">Individual Submissions</h1>
+      <h1 class="h4 fw-bold text-dark m-0">Individual Submissions</h1>
       <p class="text-secondary small m-0"><%= survey.title %></p>
     </div>
 
     <div>
-      <a href="/surveys/<%= survey.id %>/export/csv" class="btn btn-outline-success btn-sm rounded-pill px-3">
+      <a href="/surveys/<%= survey.id %>/export/csv" class="btn btn-subtle btn-sm">
         <i class="bi bi-file-earmark-spreadsheet me-1"></i> Download All as CSV
       </a>
     </div>
   </div>
 
-  <div class="card card-custom p-4">
+  <div class="pc-card p-4">
     <% if (!responses || responses.length === 0) { %>
       <div class="text-center py-5 text-muted">
-        <i class="bi bi-inbox display-6 mb-2"></i>
-        <p class="mb-0">No submissions recorded for this survey yet.</p>
+        <i class="bi bi-inbox fs-3 text-secondary mb-2"></i>
+        <p class="small mb-0">No submissions recorded for this survey yet.</p>
       </div>
     <% } else { %>
       <div class="table-responsive">
@@ -53,7 +53,7 @@
                     <div class="fw-medium text-dark"><%= resp.respondent.name %></div>
                     <div class="small text-muted"><%= resp.respondent.email %></div>
                   <% } else { %>
-                    <span class="badge bg-light text-secondary border">Anonymous</span>
+                    <span class="pc-badge bg-light text-secondary border">Anonymous</span>
                   <% } %>
                 </td>
                 <td class="small">
@@ -64,7 +64,7 @@
                         <% if (ans.numericValue !== null) { %>
                           <span class="text-warning fw-bold"><%= ans.numericValue %> / 5 ★</span>
                         <% } else if (ans.booleanValue !== null) { %>
-                          <span class="badge <%= ans.booleanValue ? 'bg-success' : 'bg-danger' %>"><%= ans.booleanValue ? 'Yes' : 'No' %></span>
+                          <span class="pc-badge <%= ans.booleanValue ? 'pc-badge-active' : 'pc-badge-danger' %>"><%= ans.booleanValue ? 'Yes' : 'No' %></span>
                         <% } else if (ans.textValue) { %>
                           <span class="text-dark">"<%= ans.textValue %>"</span>
                         <% } else if (ans.selectedOptions && ans.selectedOptions.length > 0) { %>

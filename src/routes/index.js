@@ -35,7 +35,7 @@ router.get('/', async (req, res, next) => {
     };
 
     res.render('pages/home', {
-      title: 'QuickPulse - Interactive Polling & Survey Platform',
+      title: 'PollCraft - Modern Polling & Survey Platform',
       featuredPolls,
       featuredSurveys,
       stats

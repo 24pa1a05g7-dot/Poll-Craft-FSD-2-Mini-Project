@@ -4,23 +4,23 @@
 <main class="container my-5">
   <div class="row justify-content-center">
     <div class="col-lg-7">
-      <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4 bg-white">
+      <div class="pc-card p-4 p-md-5">
         <!-- Top metadata -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
           <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-light text-primary border"><%= poll.category %></span>
-            <span class="badge <%= poll.isOpen ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' %>">
+            <span class="pc-badge pc-badge-category"><%= poll.category %></span>
+            <span class="pc-badge <%= poll.isOpen ? 'pc-badge-active' : 'pc-badge-closed' %>">
               <%= poll.isOpen ? 'Active Poll' : 'Closed' %>
             </span>
           </div>
-          <button class="btn btn-outline-secondary btn-sm rounded-pill btn-copy-link" data-url="<%= appUrl %>/polls/<%= poll.slug %>">
+          <button class="btn btn-subtle btn-sm btn-copy-link" data-url="<%= appUrl %>/polls/<%= poll.slug %>">
             <i class="bi bi-share me-1"></i> Share Link
           </button>
         </div>
 
-        <h1 class="h3 fw-bold text-dark mb-2"><%= poll.title %></h1>
+        <h1 class="h4 fw-bold text-dark mb-2"><%= poll.title %></h1>
         <% if (poll.description) { %>
-          <p class="text-secondary mb-4"><%= poll.description %></p>
+          <p class="text-secondary small mb-4"><%= poll.description %></p>
         <% } %>
 
         <% if (errors && errors.length > 0) { %>
@@ -34,35 +34,35 @@
         <% } %>
 
         <% if (hasVoted) { %>
-          <div class="card bg-success-subtle border-0 p-4 text-center rounded-3 mb-4">
-            <i class="bi bi-check-circle-fill text-success display-6 mb-2"></i>
-            <h5 class="fw-bold text-success mb-1">Your Vote Has Been Recorded!</h5>
+          <div class="pc-card bg-light p-4 text-center mb-4">
+            <i class="bi bi-check-circle-fill text-success fs-2 mb-2"></i>
+            <h5 class="fw-bold text-dark mb-1">Your Vote Has Been Recorded</h5>
             <p class="text-secondary small mb-3">You have already submitted your response to this poll.</p>
             <div>
-              <a href="/polls/<%= poll.slug %>/results" class="btn btn-success text-white px-4 rounded-pill">
+              <a href="/polls/<%= poll.slug %>/results" class="btn btn-primary btn-sm px-4">
                 <i class="bi bi-graph-up me-1"></i> View Live Results & Charts
               </a>
             </div>
           </div>
         <% } else if (!poll.isOpen) { %>
-          <div class="card bg-secondary-subtle border-0 p-4 text-center rounded-3 mb-4">
-            <i class="bi bi-lock-fill text-secondary display-6 mb-2"></i>
+          <div class="pc-card bg-light p-4 text-center mb-4">
+            <i class="bi bi-lock-fill text-secondary fs-2 mb-2"></i>
             <h5 class="fw-bold text-dark mb-1">Voting is Closed</h5>
             <p class="text-secondary small mb-3">This poll has concluded or reached its expiration deadline.</p>
             <div>
-              <a href="/polls/<%= poll.slug %>/results" class="btn btn-primary px-4 rounded-pill">
+              <a href="/polls/<%= poll.slug %>/results" class="btn btn-primary btn-sm px-4">
                 <i class="bi bi-graph-up me-1"></i> View Concluded Results
               </a>
             </div>
           </div>
         <% } else if (poll.requireLogin && !isAuthenticated) { %>
-          <div class="card bg-warning-subtle border-0 p-4 text-center rounded-3 mb-4">
-            <i class="bi bi-shield-exclamation text-warning display-6 mb-2"></i>
+          <div class="pc-card bg-light p-4 text-center mb-4">
+            <i class="bi bi-shield-exclamation text-warning fs-2 mb-2"></i>
             <h5 class="fw-bold text-dark mb-1">Authentication Required</h5>
             <p class="text-secondary small mb-3">The organizer requires voters to log in before submitting their vote.</p>
             <div class="d-flex justify-content-center gap-2">
-              <a href="/auth/login" class="btn btn-primary px-4 rounded-pill">Sign In to Vote</a>
-              <a href="/auth/register" class="btn btn-outline-secondary px-4 rounded-pill">Register</a>
+              <a href="/auth/login" class="btn btn-primary btn-sm px-4">Sign In to Vote</a>
+              <a href="/auth/register" class="btn btn-subtle btn-sm px-4">Register</a>
             </div>
           </div>
         <% } else { %>
@@ -90,7 +90,7 @@
                     <label class="poll-option-label" for="opt-<%= option.id %>">
                       <div class="d-flex align-items-center">
                         <i class="bi <%= poll.isMultipleChoice ? 'bi-square' : 'bi-circle' %> me-3 text-secondary"></i>
-                        <span class="fs-6"><%= option.optionText %></span>
+                        <span class="fs-6 text-dark"><%= option.optionText %></span>
                       </div>
                     </label>
                   </div>
@@ -99,7 +99,7 @@
             </div>
 
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-3 border-top">
-              <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill fw-medium">
+              <button type="submit" class="btn btn-primary px-4 py-2 fw-medium">
                 Submit Vote
               </button>
               <a href="/polls/<%= poll.slug %>/results" class="text-decoration-none small text-secondary">

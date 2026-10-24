@@ -1,7 +1,7 @@
 {
-  "name": "quickpulse-poll-survey-app",
+  "name": "pollcraft",
   "version": "1.0.0",
-  "description": "Full-Stack Polling & Survey Application built with Node.js, Express, Sequelize, PostgreSQL, EJS, and Chart.js",
+  "description": "PollCraft - Professional Full-Stack Polling & Survey Platform built with Node.js, Express, Sequelize, PostgreSQL, EJS, and Chart.js",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
@@ -32,6 +32,7 @@
     "ejs": "^3.1.10",
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.0",
+    "express-session": "^1.19.0",
     "helmet": "^8.1.0",
     "morgan": "^1.10.1",
     "pg": "^8.16.0",
