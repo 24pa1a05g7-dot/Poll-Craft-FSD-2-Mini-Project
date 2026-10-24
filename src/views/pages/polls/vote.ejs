@@ -71,27 +71,24 @@
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
             <div class="mb-4">
-              <div class="small text-muted mb-2">
+              <div class="small text-muted mb-2 fw-medium">
                 <% if (poll.isMultipleChoice) { %>
-                  <i class="bi bi-check2-all me-1"></i> You may select one or more options:
+                  <i class="bi bi-check2-square text-primary me-1"></i> Please select one or more options:
                 <% } else { %>
-                  <i class="bi bi-ui-radios me-1"></i> Please select one option:
+                  <i class="bi bi-record-circle text-primary me-1"></i> Please select one option:
                 <% } %>
               </div>
 
               <div class="d-flex flex-column gap-2">
                 <% poll.options.forEach(option => { %>
-                  <div>
+                  <div class="pc-vote-option p-3 border rounded-3 bg-white d-flex align-items-center">
                     <% if (poll.isMultipleChoice) { %>
-                      <input type="checkbox" class="btn-check poll-option-checkbox" name="options[]" id="opt-<%= option.id %>" value="<%= option.id %>">
+                      <input type="checkbox" class="form-check-input poll-option-checkbox me-3 my-0" name="options[]" id="opt-<%= option.id %>" value="<%= option.id %>">
                     <% } else { %>
-                      <input type="radio" class="btn-check poll-option-radio" name="option" id="opt-<%= option.id %>" value="<%= option.id %>" required>
+                      <input type="radio" class="form-check-input poll-option-radio me-3 my-0" name="option" id="opt-<%= option.id %>" value="<%= option.id %>" required>
                     <% } %>
-                    <label class="poll-option-label" for="opt-<%= option.id %>">
-                      <div class="d-flex align-items-center">
-                        <i class="bi <%= poll.isMultipleChoice ? 'bi-square' : 'bi-circle' %> me-3 text-secondary"></i>
-                        <span class="fs-6 text-dark"><%= option.optionText %></span>
-                      </div>
+                    <label class="form-check-label fs-6 text-dark w-100 mb-0" for="opt-<%= option.id %>" style="cursor: pointer;">
+                      <%= option.optionText %>
                     </label>
                   </div>
                 <% }) %>
@@ -133,5 +130,40 @@
     </div>
   </div>
 </main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const optionCards = document.querySelectorAll('.pc-vote-option');
+    function updateHighlights() {
+      optionCards.forEach(card => {
+        const input = card.querySelector('input');
+        if (input && input.checked) {
+          card.classList.add('pc-option-selected');
+        } else {
+          card.classList.remove('pc-option-selected');
+        }
+      });
+    }
+
+    optionCards.forEach(card => {
+      const input = card.querySelector('input');
+      card.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL') {
+          if (input.type === 'radio') {
+            input.checked = true;
+          } else if (input.type === 'checkbox') {
+            input.checked = !input.checked;
+          }
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+      if (input) {
+        input.addEventListener('change', updateHighlights);
+      }
+    });
+
+    updateHighlights();
+  });
+</script>
 
 <%- include('../../layouts/footer') %>

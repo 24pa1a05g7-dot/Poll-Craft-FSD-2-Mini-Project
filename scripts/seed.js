@@ -67,6 +67,11 @@ async function seed() {
 
   console.log('[SEED] Verified demonstration users.');
 
+  if (process.env.SEED_DEMO_CONTENT !== 'true') {
+    console.log('[SEED] Skipping demo polls and surveys (set SEED_DEMO_CONTENT=true to enable).');
+    return;
+  }
+
   // 2. Safe Seeding of Demonstration Polls
   const poll1Title = 'Preferred Primary Language for Modern Web Backends';
   const existingPoll1 = await Poll.findOne({ where: { title: poll1Title } });

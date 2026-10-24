@@ -93,9 +93,9 @@
                   <% if (q.questionType === 'single_choice') { %>
                     <div class="d-flex flex-column gap-2">
                       <% q.options.forEach(opt => { %>
-                        <div class="form-check">
-                          <input class="form-check-input" type="radio" name="q_<%= q.id %>" id="opt_<%= opt.id %>" value="<%= opt.id %>" <%= q.isRequired ? 'required' : '' %>>
-                          <label class="form-check-label text-dark" for="opt_<%= opt.id %>">
+                        <div class="pc-vote-option p-3 border rounded-2 bg-white d-flex align-items-center">
+                          <input class="form-check-input me-3 my-0" type="radio" name="q_<%= q.id %>" id="opt_<%= opt.id %>" value="<%= opt.id %>" <%= q.isRequired ? 'required' : '' %>>
+                          <label class="form-check-label text-dark w-100 mb-0" for="opt_<%= opt.id %>" style="cursor: pointer;">
                             <%= opt.optionText %>
                           </label>
                         </div>
@@ -105,9 +105,9 @@
                   <% } else if (q.questionType === 'multiple_choice') { %>
                     <div class="d-flex flex-column gap-2">
                       <% q.options.forEach(opt => { %>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" name="q_<%= q.id %>[]" id="opt_<%= opt.id %>" value="<%= opt.id %>">
-                          <label class="form-check-label text-dark" for="opt_<%= opt.id %>">
+                        <div class="pc-vote-option p-3 border rounded-2 bg-white d-flex align-items-center">
+                          <input class="form-check-input me-3 my-0" type="checkbox" name="q_<%= q.id %>[]" id="opt_<%= opt.id %>" value="<%= opt.id %>">
+                          <label class="form-check-label text-dark w-100 mb-0" for="opt_<%= opt.id %>" style="cursor: pointer;">
                             <%= opt.optionText %>
                           </label>
                         </div>

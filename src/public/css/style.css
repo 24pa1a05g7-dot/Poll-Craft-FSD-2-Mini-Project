@@ -214,6 +214,42 @@ textarea:focus-visible {
 }
 
 /* Poll Voting Options */
+.pc-vote-option {
+  position: relative;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  border: 1px solid var(--pc-border);
+}
+
+.pc-vote-option:hover {
+  border-color: var(--pc-border-strong);
+  background-color: var(--pc-surface-subtle) !important;
+}
+
+.pc-vote-option:has(.form-check-input:checked),
+.pc-vote-option.pc-option-selected {
+  border-color: var(--pc-accent) !important;
+  background-color: rgba(15, 23, 42, 0.04) !important;
+}
+
+.pc-vote-option .form-check-input {
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  accent-color: var(--pc-accent);
+}
+
+.pc-vote-option .form-check-input:checked[type=radio] {
+  background-color: var(--pc-accent);
+  border-color: var(--pc-accent);
+}
+
+.pc-vote-option .form-check-input:checked[type=checkbox] {
+  background-color: var(--pc-accent);
+  border-color: var(--pc-accent);
+}
+
 .poll-choice-item {
   border: 1px solid var(--pc-border);
   border-radius: var(--pc-radius-md);
