@@ -86,9 +86,18 @@ class PollService {
     if (sessionId) {
       orConditions.push({ sessionId });
     }
-    const ipHash = this.hashIp(ip);
-    if (ipHash) {
-      orConditions.push({ ipHash });
+
+    const isLoopback = !ip || ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1' || ip === 'localhost';
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    // In production, deduplicate strictly across public IP addresses to protect anonymous ballots.
+    // In local development, all local browser instances share loopback (127.0.0.1), so deduplicate by
+    // session and user account to allow developers and evaluators to test voting from different accounts/sessions.
+    if (isProduction || !isLoopback) {
+      const ipHash = this.hashIp(ip);
+      if (ipHash) {
+        orConditions.push({ ipHash });
+      }
     }
 
     if (orConditions.length === 0) return false;
