@@ -325,6 +325,42 @@ textarea:focus-visible {
 }
 
 /* Rating Scale */
+.pc-rating-bar {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pc-rating-item {
+  position: relative;
+}
+
+.pc-rating-label {
+  min-width: 54px;
+  height: 42px;
+  background-color: #ffffff !important;
+  border: 1px solid var(--pc-border) !important;
+  color: var(--pc-text) !important;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.pc-rating-label:hover {
+  background-color: var(--pc-surface-subtle) !important;
+  border-color: var(--pc-border-strong) !important;
+}
+
+.pc-rating-input:checked + .pc-rating-label {
+  background-color: var(--pc-accent) !important;
+  border-color: var(--pc-accent) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.15);
+}
+
+.pc-rating-input:checked + .pc-rating-label .text-warning {
+  color: #fbbf24 !important;
+}
+
 .rating-scale-container {
   display: flex;
   gap: 0.5rem;

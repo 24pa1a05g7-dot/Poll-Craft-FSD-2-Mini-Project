@@ -326,17 +326,19 @@ class SurveyController {
       }
 
       const isOwner = req.user && req.user.id === survey.userId;
+      const isAdmin = req.user && req.user.role === 'admin';
+      const isOwnerOrAdmin = Boolean(isOwner || isAdmin);
 
-      // Draft survey results are restricted to owner
-      if (survey.status === 'draft' && !isOwner) {
+      // Draft survey results are restricted to owner or admin
+      if (survey.status === 'draft' && !isOwnerOrAdmin) {
         return res.status(404).render('pages/errors/404', {
           title: 'Survey Not Found',
           message: 'This survey is unpublished.'
         });
       }
 
-      // Private/unlisted survey results are strictly restricted to owner
-      if (!survey.isPublic && !isOwner) {
+      // Private/unlisted survey results are strictly restricted to owner or admin
+      if (!survey.isPublic && !isOwnerOrAdmin) {
         return res.status(403).render('pages/errors/403', {
           title: '403 Forbidden - Private Results',
           message: 'Analytics for this private survey are restricted to the author.'
@@ -351,6 +353,7 @@ class SurveyController {
         totalResponses: analytics.totalResponses,
         questions: analytics.questions,
         isOwner,
+        isOwnerOrAdmin,
         appUrl: process.env.APP_URL || `http://${req.headers.host}`
       });
     } catch (err) {

@@ -18,7 +18,7 @@
             <button class="btn btn-subtle btn-sm btn-copy-link" data-url="<%= appUrl %>/surveys/<%= survey.slug %>">
               <i class="bi bi-share me-1"></i> Share
             </button>
-            <% if (isOwnerOrAdmin) { %>
+            <% if (typeof isOwnerOrAdmin !== 'undefined' && isOwnerOrAdmin) { %>
               <a href="/surveys/<%= survey.id %>/export/csv" class="btn btn-subtle btn-sm">
                 <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
               </a>
